@@ -1,10 +1,15 @@
+"""Bump-on-tail Module SW formulation solved via Vlasov-Poisson
+
+Author: Opal Issan (oissan@ucsd.edu)
+Date: November 21st, 2023
+"""
 import sys, os
 
 sys.path.append(os.path.abspath(os.path.join('..')))
 import numpy as np
 from operators.SW_sqrt import RHS
 from operators.SW import solve_poisson_equation_two_stream
-from operators.SW import integral_I0, integral_I1
+from operators.SW import integral_I0
 from FD_tools.finite_difference_operators import ddx_central
 from FD_tools.implicit_midpoint import implicit_midpoint_solver
 
@@ -19,10 +24,12 @@ def rhs(y, t):
     # static/background ions
     state_i[0, :] = (1 / (np.sqrt(2 * np.sqrt(np.pi)))) * np.ones(Nx - 1) / alpha_i
 
+    # re-arrange states in matrix notation [Nv, Nx]
     for jj in range(Nv):
         state_e1[jj, :] = y[jj * (Nx - 1): (jj + 1) * (Nx - 1)]
         state_e2[jj, :] = y[Nv * (Nx - 1) + jj * (Nx - 1): Nv * (Nx - 1) + (jj + 1) * (Nx - 1)]
 
+    # solver Poisson equation using GMRES method
     E = solve_poisson_equation_two_stream(state_e1=state_e1,
                                           state_e2=state_e2,
                                           state_i=state_i,
@@ -96,7 +103,7 @@ if __name__ == '__main__':
     # number of mesh points in x
     Nx = 101
     # number of spectral expansions
-    Nv = 101
+    Nv = 100
     # epsilon displacement in initial electron distribution
     epsilon = 0.03
     # velocity scaling of electron and ion
@@ -110,10 +117,9 @@ if __name__ == '__main__':
     # time stepping
     dt = 1e-2
     # final time
-    T = 15
+    T = 20
+    # timestamp vector
     t_vec = np.linspace(0, T, int(T / dt) + 1)
-    # total number of time stepping
-    Nt = int(T / dt)
     # velocity scaling
     u_e1 = 0
     u_e2 = 4.5
@@ -139,23 +145,23 @@ if __name__ == '__main__':
     C_0i = (1 / (np.sqrt(2 * np.sqrt(np.pi)))) * np.ones(Nx) / alpha_i
 
     # initialize states (electrons type 1 and 2)
-    states_e1 = np.zeros((Nv, Nx - 1, Nt))
-    states_e2 = np.zeros((Nv, Nx - 1, Nt))
-    states_i = np.zeros((Nv, Nx - 1, Nt))
+    states_e1 = np.zeros((Nv, Nx - 1))
+    states_e2 = np.zeros((Nv, Nx - 1))
+    states_i = np.zeros((Nv, Nx - 1))
 
     # initialize the expansion coefficients
-    states_e1[0, :, 0] = C_0e1[:-1]
-    states_e2[0, :, 0] = C_0e2[:-1]
-    states_i[0, :, 0] = C_0i[:-1]
+    states_e1[0, :] = C_0e1[:-1]
+    states_e2[0, :] = C_0e2[:-1]
+    states_i[0, :] = C_0i[:-1]
 
     # initial condition of the semi-discretized ODE
     y0 = np.zeros((2 * Nv) * (Nx - 1) + 5)
-    y0[:(Nx - 1) * Nv] = states_e1[:, :, 0].flatten("C")
-    y0[Nv * (Nx - 1): 2 * Nv * (Nx - 1)] = states_e2[:, :, 0].flatten("C")
+    y0[:(Nx - 1) * Nv] = states_e1.flatten("C")
+    y0[Nv * (Nx - 1): 2 * Nv * (Nx - 1)] = states_e2.flatten("C")
 
     # integrate (symplectic integrator: implicit midpoint)
     sol_midpoint_u = implicit_midpoint_solver(t_vec=t_vec, y0=y0, rhs=rhs, nonlinear_solver_type="newton_krylov",
                                               r_tol=1e-8, a_tol=1e-14, max_iter=100)
 
-    np.save("../data/SW/bump_on_tail/poisson/sol_midpoint_u_101", sol_midpoint_u)
-    np.save("../data/SW/bump_on_tail/poisson/sol_midpoint_t_101", t_vec)
+    np.save("../data/SW/bump_on_tail/poisson/sol_midpoint_u_100", sol_midpoint_u)
+    np.save("../data/SW/bump_on_tail/poisson/sol_midpoint_t_100", t_vec)

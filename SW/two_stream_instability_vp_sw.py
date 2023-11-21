@@ -1,3 +1,8 @@
+"""Two Stream Instability Module SW formulation solved via Vlasov-Poisson
+
+Author: Opal Issan (oissan@ucsd.edu)
+Date: November 21st, 2023
+"""
 import sys, os
 
 sys.path.append(os.path.abspath(os.path.join('..')))

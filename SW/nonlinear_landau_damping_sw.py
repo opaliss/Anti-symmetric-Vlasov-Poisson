@@ -1,3 +1,8 @@
+"""Nonlinear Landau Damping Module SW formulation solved via Vlasov-Poisson
+
+Author: Opal Issan (oissan@ucsd.edu)
+Date: November 21st, 2023
+"""
 import sys, os
 sys.path.append(os.path.abspath(os.path.join('..')))
 import numpy as np
@@ -20,21 +25,17 @@ def rhs(y, t):
     for jj in range(Nv):
         state_e[jj, :] = y[jj * (Nx - 1): (jj + 1) * (Nx - 1)]
 
-    E = solve_poisson_equation(state_e=state_e,
-                               state_i=state_i,
-                               alpha_e=alpha_e,
-                               alpha_i=alpha_i,
-                               dx=dx,
-                               Nx=Nx - 1,
-                               Nv=Nv,
-                               solver="gmres",
-                               order_fd=2,
-                               L=L)
+    # solver Poisson equation
+    E = solve_poisson_equation(state_e=state_e, state_i=state_i,
+                               alpha_e=alpha_e, alpha_i=alpha_i,
+                               dx=dx, Nx=Nx - 1, Nv=Nv,
+                               solver="gmres", order_fd=2, L=L)
 
 
     for jj in range(Nv):
         dydt_[jj * (Nx - 1): (jj + 1) * (Nx - 1)] = RHS(state=state_e, m=jj, Nv=Nv,
-                                                        alpha_s=alpha_e, q_s=q_e, dx=dx, Nx=Nx, m_s=m_e, E=E, u_s=u_e)
+                                                        alpha_s=alpha_e, q_s=q_e,
+                                                        dx=dx, Nx=Nx, m_s=m_e, E=E, u_s=u_e)
 
     # mass drift (even)
     dydt_[-1] = -dx * (q_e / m_e) * np.sqrt((Nv - 1) / 2) * integral_I0(n=Nv - 2) * E.T @ state_e[-1, :] \
@@ -110,8 +111,8 @@ if __name__ == '__main__':
 
     # integrate (symplectic integrator: implicit midpoint)
     sol_midpoint_u = implicit_midpoint_solver(t_vec=t_vec, y0=y0, rhs=rhs, nonlinear_solver_type="newton_krylov",
-                                              r_tol=1e-8, a_tol=1e-15, max_iter=100)
+                                              r_tol=1e-8, a_tol=1e-14, max_iter=100)
 
     # save results
-    np.save("../data/SW/nonlinear_landau/poisson/sol_midpoint_u_100_gmres", sol_midpoint_u)
-    np.save("../data/SW/nonlinear_landau/poisson/sol_midpoint_t_100_gmres", t_vec)
+    np.save("../data/SW/nonlinear_landau/poisson/sol_midpoint_u_100", sol_midpoint_u)
+    np.save("../data/SW/nonlinear_landau/poisson/sol_midpoint_t_100", t_vec)
