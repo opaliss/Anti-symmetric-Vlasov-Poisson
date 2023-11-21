@@ -28,7 +28,6 @@ def gmres_solver(rhs, dx, periodic=True, order="ddx", order_fd=2):
         A = d2dx2_central(Nx=len(rhs) + 1, dx=dx, periodic=periodic, order=order_fd)
 
     x, _ = gmres(csc_matrix(A), rhs - np.mean(rhs), atol=1e-15, tol=1e-8)
-    #print("gmres error ==", np.max(np.abs(A@x - rhs + np.mean(rhs))))
     return x - np.mean(x)
 
 
@@ -63,17 +62,15 @@ def fft_solver_Ax_b(rhs, dx):
 def fft_solver(rhs, L):
     """Poisson solver using fft
 
-        Ax = b
-        fft(A[:, 0]) * fft(x) = fft(b)
-        fft(x) = fft(b) / fft(A[:, 0])
-        x = ifft(fft(b) / fft(A[:, 0]))
+        d/dx x = b
+        J @ fft(x) = fft(b)
+        x = ifft(J @ fft(b))
 
     :param rhs: array, rhs of the equation (poisson)
     :param L: float, length of spatial domain
     :return: x that satisfies Ax = rhs
     """
     x = np.fft.fft(rhs - np.mean(rhs))
-    x = np.append(x, x[0])
     N = len(x)
 
     for k in range(-N//2, N//2):
@@ -82,6 +79,5 @@ def fft_solver(rhs, L):
         else:
             x[k] = 0
 
-    x = np.fft.ifft(x).real
-    E = x - np.mean(x)
-    return E[:-1]
+    x_ = np.fft.ifft(x).real
+    return x_

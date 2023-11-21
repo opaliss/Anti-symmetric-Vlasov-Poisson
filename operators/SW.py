@@ -5,41 +5,41 @@ Last Update: November 20th, 2023
 """
 import numpy as np
 from FD_tools.poisson_solver import gmres_solver, fft_solver, fft_solver_Ax_b
+import scipy
 
 
 def integral_I0(n):
-    """integral I0 in SW formulation
-
-    :param n: int, the order of the integral
+    """
+    :param n: the order of the integral
     :return: the integral I0_{n}
     """
     if n < 0:
         return 0
+    # elif n > Nv - 1:
+    #     return 0
     elif n == 0:
-        return np.sqrt(2) * (np.pi ** (1/4))
+        return np.sqrt(2) * (np.pi ** (1 / 4))
     elif n % 2 == 1:
         return 0
     else:
-        term = np.zeros(n+1)
-        term[0] = np.sqrt(2) * (np.pi ** (1/4))
-        for m in range(2, n+1):
+        term = np.zeros(n+10)
+        term[0] = np.sqrt(2) * (np.pi ** (1 / 4))
+        for m in range(2, n+10):
             term[m] = np.sqrt((m - 1) / m) * term[m - 2]
         return term[n]
 
 
 def integral_I1(n, u_s, alpha_s):
-    """integral I1 in SW formulation
-
-    :param n: int, order of the integral
-    :param u_s: float, the velocity shifting of species s
-    :param alpha_s: float, the velocity scaling of species s
+    """
+    :param n: order of the integral
+    :param u_s: the velocity shifting of species s
+    :param alpha_s: the velocity scaling of species s
     :return: the integral I1_{n}
     """
     if n % 2 == 0:
         return u_s * integral_I0(n=n)
     else:
-        return alpha_s * np.sqrt(n / 2) * integral_I0(n=n - 1) \
-             + alpha_s * np.sqrt((n + 1) / 2) * integral_I0(n=n + 1)
+        return alpha_s * np.sqrt(2) * np.sqrt(n) * integral_I0(n=n - 1)
 
 
 def integral_I2(n, u_s, alpha_s):
@@ -55,7 +55,7 @@ def integral_I2(n, u_s, alpha_s):
                 (2 * n + 1) / 2 + (u_s / alpha_s) ** 2) * integral_I0(n=n) + 0.5 * np.sqrt(n * (n - 1)) *
                                  integral_I0(n=n - 2))
     else:
-        return 2*u_s*integral_I1(n=n, u_s=u_s, alpha_s=alpha_s)
+        return 2 * u_s * integral_I1(n=n, u_s=u_s, alpha_s=alpha_s)
 
 
 def linear_2(state_e, state_i, alpha_e, alpha_i, Nv, Nx, q_e=-1, q_i=1):
@@ -173,8 +173,9 @@ def mass(state, Nv):
     """
     res = 0
     for m in range(Nv):
-        res += integral_I0(n=m)*np.sum(state[m, :])
+        res += integral_I0(n=m) * np.sum(state[m, :])
     return res
+
 
 def momentum(state, u_s, alpha_s, Nv):
     """momentum of the particular state
@@ -242,7 +243,6 @@ def total_momentum(state_e, state_i, alpha_e, alpha_i, dx, Nv, m_e, m_i, u_e, u_
     return term_e + term_i
 
 
-
 def total_energy_k(state_e, state_i, alpha_e, alpha_i, dx, Nv, m_e, m_i, u_e, u_i):
     """total kinetic energy of single electron and ion setup
 
@@ -261,3 +261,40 @@ def total_energy_k(state_e, state_i, alpha_e, alpha_i, dx, Nv, m_e, m_i, u_e, u_
     term_e = energy_k(state=state_e, Nv=Nv, alpha_s=alpha_e, u_s=u_e) * dx * alpha_e * m_e
     term_i = energy_k(state=state_i, Nv=Nv, alpha_s=alpha_i, u_s=u_i) * dx * alpha_i * m_i
     return 0.5 * (term_e + term_i)
+
+
+def J_matrix(Nx, L):
+    """return J matrix for linear term
+
+    :param Nx: number of spatial spectral terms
+    :param L: the length of the spatial domain
+    :return: J matrix (anti-symmetric + diagonal)
+    """
+    J = np.zeros(((Nx//2), (Nx//2)), dtype="complex128")
+    for ii, kk in enumerate(range(-Nx//2, Nx//2 + 1)):
+        J[ii, ii] = 2 * np.pi * 1j * kk / L
+    return J
+
+
+def J_matrix_inv(Nx, L):
+    """return J matrix inverse for drift term
+
+    :param Nx: number of spatial spectral terms
+    :param L: the length of the spatial domain
+    :return: J matrix (anti-symmetric + diagonal)
+    """
+    J = np.zeros(((Nx//2), (Nx//2)), dtype="complex128")
+    for ii, kk in enumerate(range(-Nx//2, Nx//2 + 1)):
+        J[ii, ii] = L / 2 * np.pi * 1j * kk
+    return J
+
+
+def M_matrix(Nx, L):
+    """
+
+    :param Nx: int, number of spatial grid points
+    :param L: float, spatial domain length
+    :return: W.H @ J-1 @ W for energy conservation drift (even)
+    """
+    W = scipy.linalg.dft(Nx, scale="sqrtn")
+    return np.conjugate(W).T @ J_matrix_inv(Nx=Nx, L=L) @ W
