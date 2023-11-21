@@ -27,8 +27,8 @@ def gmres_solver(rhs, dx, periodic=True, order="ddx", order_fd=2):
         # second order derivative matrix
         A = d2dx2_central(Nx=len(rhs) + 1, dx=dx, periodic=periodic, order=order_fd)
 
-    x, _ = gmres(csc_matrix(A), rhs - np.mean(rhs), atol=1e-16, tol=1e-16)
-    print("gmres error ==", np.max(np.abs(A@x - rhs + np.mean(rhs))))
+    x, _ = gmres(csc_matrix(A), rhs - np.mean(rhs), atol=1e-15, tol=1e-8)
+    #print("gmres error ==", np.max(np.abs(A@x - rhs + np.mean(rhs))))
     return x - np.mean(x)
 
 
@@ -54,7 +54,7 @@ def fft_solver_Ax_b(rhs, dx):
     x = np.fft.ifft(sol).real
     L_inf = np.max(np.abs(D @ x - rhs + np.mean(rhs)))
     print("fft error = ", L_inf)
-    if L_inf < 1e-8:
+    if L_inf < 1e-10:
         return x - np.mean(x)
     else:
         return gmres_solver(rhs=rhs, dx=dx, periodic=True, order="ddx")
@@ -73,13 +73,15 @@ def fft_solver(rhs, L):
     :return: x that satisfies Ax = rhs
     """
     x = np.fft.fft(rhs - np.mean(rhs))
-    N = len(rhs)
+    x = np.append(x, x[0])
+    N = len(x)
 
     for k in range(-N//2, N//2):
         if not k == 0:
-            x[k] /= (1j*(2*np.pi*k/L))**2
+            x[k] /= 1j*2*np.pi*k/L
         else:
             x[k] = 0
 
     x = np.fft.ifft(x).real
-    return x - np.mean(x)
+    E = x - np.mean(x)
+    return E[:-1]

@@ -162,3 +162,102 @@ def solve_poisson_equation_two_stream(state_e1, state_e2, state_i, alpha_e1, alp
         return fft_solver(rhs=rhs, L=L)
     elif solver == "fft_solver_Ax_b":
         return fft_solver_Ax_b(rhs=rhs, dx=dx)
+
+
+def mass(state, Nv):
+    """mass of the particular state
+
+    :param state: ndarray, electron or ion state
+    :param Nv: int, number of velocity Hermite spectral terms
+    :return: mass for the state
+    """
+    res = 0
+    for m in range(Nv):
+        res += integral_I0(n=m)*np.sum(state[m, :])
+    return res
+
+def momentum(state, u_s, alpha_s, Nv):
+    """momentum of the particular state
+
+    :param state: ndarray, electron or ion state
+    :param Nv: int, number of velocity Hermite spectral terms
+    :param u_s, float, the velocity shifting parameter
+    :param alpha_s, float, the velocity scaling parameter
+    :return: momentum for the state
+    """
+    res = 0
+    for m in range(Nv):
+        res += integral_I1(n=m, u_s=u_s, alpha_s=alpha_s) * np.sum(state[m, :])
+    return res
+
+
+def energy_k(state, u_s, alpha_s, Nv):
+    """kinetic energy of the particular state
+
+    :param state: ndarray, electron or ion state
+    :param Nv: int, number of velocity Hermite spectral terms
+    :param u_s, float, the velocity shifting parameter
+    :param alpha_s, float, the velocity scaling parameter
+    :return: kinetic energy for the state
+    """
+    res = 0
+    for m in range(Nv):
+        res += integral_I2(n=m, u_s=u_s, alpha_s=alpha_s) * np.sum(state[m, :])
+    return res
+
+
+def total_mass(state_e, state_i, alpha_e, alpha_i, dx, Nv):
+    """total mass of single electron and ion setup
+
+    :param state_e: ndarray, electrons state
+    :param state_i: ndarray, ions state
+    :param alpha_e: float, velocity scaling of electrons
+    :param alpha_i: float, velocity scaling of ions
+    :param dx: float, spatial spacing
+    :param Nv: int, the number of velocity spectral terms
+    :return: total mass of single electron and ion setup
+    """
+    term_e = mass(state=state_e, Nv=Nv) * dx * alpha_e
+    term_i = mass(state=state_i, Nv=Nv) * dx * alpha_i
+    return term_e + term_i
+
+
+def total_momentum(state_e, state_i, alpha_e, alpha_i, dx, Nv, m_e, m_i, u_e, u_i):
+    """total momentum of single electron and ion setup
+
+    :param state_e: ndarray, electrons state
+    :param state_i: ndarray, ions state
+    :param alpha_e: float, velocity scaling of electrons
+    :param alpha_i: float, velocity scaling of ions
+    :param dx: float, spatial spacing
+    :param Nv: int, the number of velocity spectral terms
+    :param m_e: float, mass of electron
+    :param m_i, float, mass of ion
+    :param u_e: float, velocity shifting parameter of electrons
+    :param u_i: float, velocity shifting parameter of ions
+    :return: total momentum of single electron and ion setup
+    """
+    term_e = momentum(state=state_e, Nv=Nv, alpha_s=alpha_e, u_s=u_e) * dx * alpha_e * m_e
+    term_i = momentum(state=state_i, Nv=Nv, alpha_s=alpha_i, u_s=u_i) * dx * alpha_i * m_i
+    return term_e + term_i
+
+
+
+def total_energy_k(state_e, state_i, alpha_e, alpha_i, dx, Nv, m_e, m_i, u_e, u_i):
+    """total kinetic energy of single electron and ion setup
+
+    :param state_e: ndarray, electrons state
+    :param state_i: ndarray, ions state
+    :param alpha_e: float, velocity scaling of electrons
+    :param alpha_i: float, velocity scaling of ions
+    :param dx: float, spatial spacing
+    :param Nv: int, the number of velocity spectral terms
+    :param m_e: float, mass of electron
+    :param m_i, float, mass of ion
+    :param u_e: float, velocity shifting parameter of electrons
+    :param u_i: float, velocity shifting parameter of ions
+    :return: total kinetic energy of single electron and ion setup
+    """
+    term_e = energy_k(state=state_e, Nv=Nv, alpha_s=alpha_e, u_s=u_e) * dx * alpha_e * m_e
+    term_i = energy_k(state=state_i, Nv=Nv, alpha_s=alpha_i, u_s=u_i) * dx * alpha_i * m_i
+    return 0.5 * (term_e + term_i)
