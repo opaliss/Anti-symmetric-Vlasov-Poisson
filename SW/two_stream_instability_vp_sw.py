@@ -75,8 +75,8 @@ def rhs(y, t):
                                                                 alpha_i * q_i * state_i[-1, :])
     # momentum (even)
     dydt_[-3] = -dx * np.sqrt((Nv - 1) / 2) * integral_I0(n=Nv - 2) * E.T @ (u_e1 * q_e1 * state_e1[-1, :] +
-                                                                            u_e2 * q_e2 * state_e2[-1, :] +
-                                                                            u_i * q_i * state_i[-1, :])
+                                                                             u_e2 * q_e2 * state_e2[-1, :] +
+                                                                             u_i * q_i * state_i[-1, :])
 
     # energy (odd)
     dydt_[-4] = -dx * (Nv - 1) * integral_I0(n=Nv - 1) * E.T @ (u_e1 * q_e1 * state_e1[-1, :] +
@@ -86,12 +86,12 @@ def rhs(y, t):
     D = ddx_central(Nx=Nx, dx=dx)
     D_pinv = np.linalg.pinv(D)
     dydt_[-5] = -dx * np.sqrt((Nv - 1) / 2) * integral_I0(n=Nv - 2) * E.T @ (
-                 q_e1 * ((2 * Nv - 1) * (alpha_e1 ** 2) + u_e1 ** 2) * state_e1[-1, :]
-               + q_e2 * ((2 * Nv - 1) * (alpha_e2 ** 2) + u_e2 ** 2) * state_e2[-1, :]
-               + q_i * ((2 * Nv - 1) * (alpha_i ** 2) + u_i ** 2) * state_i[-1, :]
-               + q_e1**2/m_e1 * D_pinv @ (E * state_e1[-1, :])
-               + q_e2**2/m_e2 * D_pinv @ (E * state_e2[-1, :])
-               + q_i**2/m_i * D_pinv @ (E * state_i[-1, :]))
+            q_e1 * ((2 * Nv - 1) * (alpha_e1 ** 2) + u_e1 ** 2) * state_e1[-1, :]
+            + q_e2 * ((2 * Nv - 1) * (alpha_e2 ** 2) + u_e2 ** 2) * state_e2[-1, :]
+            + q_i * ((2 * Nv - 1) * (alpha_i ** 2) + u_i ** 2) * state_i[-1, :]
+            + q_e1 ** 2 / m_e1 * D_pinv @ (E * state_e1[-1, :])
+            + q_e2 ** 2 / m_e2 * D_pinv @ (E * state_e2[-1, :])
+            + q_i ** 2 / m_i * D_pinv @ (E * state_i[-1, :]))
 
     print("time = ", t)
     return dydt_
@@ -118,7 +118,7 @@ if __name__ == '__main__':
     # final time
     T = 45
     # timestamp vector
-    t_vec = np.linspace(0, T, int(T/dt))
+    t_vec = np.linspace(0, T, int(T / dt))
     # velocity scaling
     u_e1 = 1
     u_e2 = -1
@@ -156,5 +156,5 @@ if __name__ == '__main__':
     sol_midpoint_u = implicit_midpoint_solver(t_vec=t_vec, y0=y0, rhs=rhs, nonlinear_solver_type="newton_krylov",
                                               r_tol=1e-8, a_tol=1e-14, max_iter=100)
 
-    np.save("../data/SW/two_stream/poisson/sol_midpoint_u_100", sol_midpoint_u)
-    np.save("../data/SW/two_stream/poisson/sol_midpoint_t_100",  t_vec)
+    np.save("../data/SW/two_stream/sol_midpoint_u_100", sol_midpoint_u)
+    np.save("../data/SW/two_stream/sol_midpoint_t_100", t_vec)

@@ -25,7 +25,7 @@ def rhs(y, t):
     for jj in range(Nv):
         state_e[jj, :] = y[jj * (Nx - 1): (jj + 1) * (Nx - 1)]
 
-    # solver Poisson equation
+    # Poisson equation solver
     E = solve_poisson_equation(state_e=state_e, state_i=state_i,
                                alpha_e=alpha_e, alpha_i=alpha_i,
                                dx=dx, Nx=Nx - 1, Nv=Nv,
