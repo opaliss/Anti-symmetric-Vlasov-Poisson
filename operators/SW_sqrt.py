@@ -273,8 +273,8 @@ def momentum_drift(state_e, state_i, E, Nv, alpha_e, alpha_i, q_e, q_i, dx):
     :param q_i: float, charge of ions
     :return: dP/dt
     """
-    return -2 * dx * (Nv - 1) * E.T @ (q_e * alpha_e * state_e[-1, :]**2
-                                     + q_i * alpha_i * state_i[-1, :]**2)
+    return -2 * dx * (Nv - 1) * E.T @ (q_e * alpha_e * state_e[-1, :] ** 2
+                                       + q_i * alpha_i * state_i[-1, :] ** 2)
 
 
 def energy_drift(state_e, state_i, E, Nv, alpha_e, alpha_i, q_e, q_i, dx, m_e, m_i, Nx, u_e, u_i):
@@ -293,11 +293,11 @@ def energy_drift(state_e, state_i, E, Nv, alpha_e, alpha_i, q_e, q_i, dx, m_e, m
     D = ddx_central(Nx=Nx, dx=dx)
     D_pinv = np.linalg.pinv(D)
     term1 = -dx * (alpha_e ** 2) * np.sqrt((Nv - 1) / 2) * (Nv / 2) * (
-                -m_e * (alpha_e ** 2) * state_e[-2, :].T @ D @ state_e[-1, :] + q_e * E.T @ (
-                    state_e[-2, :] * state_e[-1, :]))
+            -m_e * (alpha_e ** 2) * state_e[-2, :].T @ D @ state_e[-1, :] + q_e * E.T @ (
+            state_e[-2, :] * state_e[-1, :]))
     term2 = -dx * (alpha_i ** 2) * np.sqrt((Nv - 1) / 2) * (Nv / 2) * (
-                            -m_i * (alpha_i ** 2) * state_i[-2, :].T @ D @ state_i[-1, :] + q_i * E.T @ (
-                                state_i[-2, :] * state_i[-1, :]))
+            -m_i * (alpha_i ** 2) * state_i[-2, :].T @ D @ state_i[-1, :] + q_i * E.T @ (
+            state_i[-2, :] * state_i[-1, :]))
 
     term3 = dx * q_e * alpha_e * E.T @ energy_drift_a(state=state_e, Nv=Nv, alpha_s=alpha_e, u_s=u_e)
     term4 = dx * q_i * alpha_i * E.T @ energy_drift_a(state=state_i, Nv=Nv, alpha_s=alpha_i, u_s=u_i)
@@ -340,3 +340,98 @@ def energy_drift_b(state, Nv, D, alpha_s, u_s):
 
     D_pinv = np.linalg.pinv(D)
     return D_pinv @ res
+
+
+def mass_term(state, Nv):
+    """
+
+    :param state: ndarray, state with spectral coefficients of species s
+    :param Nv: int, number of velocity spectral terms
+    :return:
+    """
+    res = 0
+    for m in range(Nv):
+        res += state[m, :].T @ state[m, :]
+    return res
+
+
+def mass(state, alpha_s, dx, Nv):
+    """ mass of species s
+
+    :param state: ndarray, state with spectral coefficients of species s
+    :param alpha_s: float, velocity scaling parameter
+    :param dx: float, spatial spacing
+    :param Nv: int, number of velocity spectral terms
+    :return: mass of species s
+    """
+    return mass_term(state=state, Nv=Nv) * dx * alpha_s
+
+
+def momentum_term(state, Nv):
+    """momentum term of species s
+
+    :param state: ndarray, state with spectral coefficients of species s
+    :param Nv: int, number of velocity spectral terms
+    :return: momentum term of species s
+    """
+    res = 0
+    for m in range(Nv):
+        res += np.sqrt(m / 2) * state[m - 1, :].T @ state[m, :]
+    return res
+
+
+def momentum(state, alpha_s, dx, Nv, u_s, m_s):
+    """momentum of species s
+
+    :param state: ndarray, state with spectral coefficients of species s
+    :param alpha_s: float, velocity scaling parameter
+    :param dx: float, spatial spacing
+    :param Nv: int, number of velocity spectral terms
+    :param u_s: velocity shifting parameter
+    :param m_s: mass of species s
+    :return: momentum of species s
+    """
+    return dx * m_s * alpha_s * (u_s * mass_term(state=state, Nv=Nv)
+                                 + alpha_s * (2 * momentum_term(state=state, Nv=Nv)))
+
+
+def energy_k_term1(state, Nv):
+    """
+
+    :param state: ndarray, state with spectral coefficients of species s
+    :param Nv: int, number of velocity spectral terms
+    :return term1 in kinetic energy
+    """
+    res = 0
+    for m in range(Nv):
+        res += 0.5 * m * state[m, :].T @ state[m, :]
+    return res
+
+
+def energy_k_term2(state, Nv):
+    """
+    :param state: ndarray, state with spectral coefficients of species s
+    :param Nv: int, number of velocity spectral terms
+    :return term2 in kinetic energy
+    """
+    res = 0
+    for m in range(0, Nv - 2):
+        res += 0.5 * np.sqrt((m + 1) * (m + 2)) * state[m, :].T @ state[m + 2, :]
+    return res
+
+
+def energy_k(state, Nv, alpha_s, m_s, dx, u_s):
+    """kinetic energy of species s
+
+    :param state: ndarray, state with spectral coefficients of species s
+    :param alpha_s: float, velocity scaling parameter
+    :param dx: float, spatial spacing
+    :param Nv: int, number of velocity spectral terms
+    :param u_s: velocity shifting parameter
+    :param m_s: mass of species s
+    :return: kinetic energy of species s
+    """
+    return dx * m_s * alpha_s * (alpha_s ** 2 * energy_k_term1(state=state, Nv=Nv)
+                                 + 0.5 * (u_s ** 2 + 0.5 * alpha_s ** 2) * mass_term(state=state, Nv=Nv)
+                                 + 2 * u_s * alpha_s * momentum_term(state=state, Nv=Nv)
+                                 + (alpha_s**2) * energy_k_term2(state=state, Nv=Nv))

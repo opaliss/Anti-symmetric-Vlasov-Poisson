@@ -9,7 +9,7 @@ sys.path.append(os.path.abspath(os.path.join('..')))
 import numpy as np
 from operators.SW_sqrt import RHS
 from FD_tools.finite_difference_operators import ddx_central
-from operators.SW import solve_poisson_equation, integral_I0, M_matrix
+from operators.SW import solve_poisson_equation, integral_I0
 from FD_tools.implicit_midpoint import implicit_midpoint_solver
 
 
@@ -71,7 +71,7 @@ if __name__ == '__main__':
     # number of mesh points in x
     Nx = 101
     # number of spectral expansions
-    Nv = 100
+    Nv = 101
     # epsilon displacement in initial electron distribution
     epsilon = 1e-2
     # velocity scaling of electron and ion
@@ -119,5 +119,5 @@ if __name__ == '__main__':
                                               r_tol=1e-8, a_tol=1e-14, max_iter=100)
 
     # save results
-    np.save("../data/SW/linear_landau/sol_midpoint_u_100_gmres", sol_midpoint_u)
-    np.save("../data/SW/linear_landau/sol_midpoint_t_100_gmres", t_vec)
+    np.save("../data/SW/linear_landau/sol_midpoint_u_101", sol_midpoint_u)
+    np.save("../data/SW/linear_landau/sol_midpoint_t_101", t_vec)
