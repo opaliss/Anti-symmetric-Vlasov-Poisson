@@ -207,94 +207,41 @@ def energy_k(state, u_s, alpha_s, Nv):
     return res
 
 
-def total_mass(state_e, state_i, alpha_e, alpha_i, dx, Nv):
+def total_mass(state, alpha_s, dx, Nv):
     """total mass of single electron and ion setup
 
-    :param state_e: ndarray, electrons state
-    :param state_i: ndarray, ions state
-    :param alpha_e: float, velocity scaling of electrons
-    :param alpha_i: float, velocity scaling of ions
+    :param state: ndarray, species s state
+    :param alpha_s: float, velocity scaling of species s
     :param dx: float, spatial spacing
     :param Nv: int, the number of velocity spectral terms
     :return: total mass of single electron and ion setup
     """
-    term_e = mass(state=state_e, Nv=Nv) * dx * alpha_e
-    term_i = mass(state=state_i, Nv=Nv) * dx * alpha_i
-    return term_e + term_i
+    return mass(state=state, Nv=Nv) * dx * alpha_s
 
 
-def total_momentum(state_e, state_i, alpha_e, alpha_i, dx, Nv, m_e, m_i, u_e, u_i):
+def total_momentum(state, alpha_s, dx, Nv, m_s, u_s):
     """total momentum of single electron and ion setup
 
-    :param state_e: ndarray, electrons state
-    :param state_i: ndarray, ions state
-    :param alpha_e: float, velocity scaling of electrons
-    :param alpha_i: float, velocity scaling of ions
+    :param state: ndarray, species s state
+    :param alpha_s: float, velocity scaling of species s
     :param dx: float, spatial spacing
     :param Nv: int, the number of velocity spectral terms
-    :param m_e: float, mass of electron
-    :param m_i, float, mass of ion
-    :param u_e: float, velocity shifting parameter of electrons
-    :param u_i: float, velocity shifting parameter of ions
+    :param m_e: float, mass of species s
+    :param u_s: float, velocity shifting parameter of species s
     :return: total momentum of single electron and ion setup
     """
-    term_e = momentum(state=state_e, Nv=Nv, alpha_s=alpha_e, u_s=u_e) * dx * alpha_e * m_e
-    term_i = momentum(state=state_i, Nv=Nv, alpha_s=alpha_i, u_s=u_i) * dx * alpha_i * m_i
-    return term_e + term_i
+    return momentum(state=state, Nv=Nv, alpha_s=alpha_s, u_s=u_s) * dx * alpha_s * m_s
 
 
-def total_energy_k(state_e, state_i, alpha_e, alpha_i, dx, Nv, m_e, m_i, u_e, u_i):
+def total_energy_k(state, alpha_s, dx, Nv, m_s, u_s):
     """total kinetic energy of single electron and ion setup
 
-    :param state_e: ndarray, electrons state
-    :param state_i: ndarray, ions state
-    :param alpha_e: float, velocity scaling of electrons
-    :param alpha_i: float, velocity scaling of ions
+    :param state: ndarray, species s  state
+    :param alpha_s: float, velocity scaling of species s
     :param dx: float, spatial spacing
     :param Nv: int, the number of velocity spectral terms
-    :param m_e: float, mass of electron
-    :param m_i, float, mass of ion
-    :param u_e: float, velocity shifting parameter of electrons
-    :param u_i: float, velocity shifting parameter of ions
+    :param m_s: float, mass of species s
+    :param u_s: float, velocity shifting parameter of species s
     :return: total kinetic energy of single electron and ion setup
     """
-    term_e = energy_k(state=state_e, Nv=Nv, alpha_s=alpha_e, u_s=u_e) * dx * alpha_e * m_e
-    term_i = energy_k(state=state_i, Nv=Nv, alpha_s=alpha_i, u_s=u_i) * dx * alpha_i * m_i
-    return 0.5 * (term_e + term_i)
-
-
-def J_matrix(Nx, L):
-    """return J matrix for linear term
-
-    :param Nx: number of spatial spectral terms
-    :param L: the length of the spatial domain
-    :return: J matrix (anti-symmetric + diagonal)
-    """
-    J = np.zeros(((Nx//2), (Nx//2)), dtype="complex128")
-    for ii, kk in enumerate(range(-Nx//2, Nx//2 + 1)):
-        J[ii, ii] = 2 * np.pi * 1j * kk / L
-    return J
-
-
-def J_matrix_inv(Nx, L):
-    """return J matrix inverse for drift term
-
-    :param Nx: number of spatial spectral terms
-    :param L: the length of the spatial domain
-    :return: J matrix (anti-symmetric + diagonal)
-    """
-    J = np.zeros(((Nx//2), (Nx//2)), dtype="complex128")
-    for ii, kk in enumerate(range(-Nx//2, Nx//2 + 1)):
-        J[ii, ii] = L / 2 * np.pi * 1j * kk
-    return J
-
-
-def M_matrix(Nx, L):
-    """
-
-    :param Nx: int, number of spatial grid points
-    :param L: float, spatial domain length
-    :return: W.H @ J-1 @ W for energy conservation drift (even)
-    """
-    W = scipy.linalg.dft(Nx, scale="sqrtn")
-    return np.conjugate(W).T @ J_matrix_inv(Nx=Nx, L=L) @ W
+    return 0.5 * energy_k(state=state, Nv=Nv, alpha_s=alpha_s, u_s=u_s) * dx * alpha_s * m_s
