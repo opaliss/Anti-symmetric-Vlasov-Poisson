@@ -259,3 +259,84 @@ def ampere_equation_RHS_two_stream(state_e1, state_e2, state_i, alpha_e1, alpha_
     term5 = np.sqrt(2) * (alpha_e2 ** 2) * (-ampere_term(state=state_e2) + 1 / L * dx * ampere_term(state=state_e2))
     term6 = np.sqrt(2) * (alpha_i ** 2) * (-ampere_term(state=state_i) + 1 / L * dx * ampere_term(state=state_i))
     return q_e1 * (term1 + term4) + q_e2 * (term2 + term5) + q_i * (term3 + term6)
+
+
+def momentum_drift(state_e, state_i, E, Nv, alpha_e, alpha_i, q_e, q_i, dx):
+    """dP/dt for SW square-root formulation
+
+    :param state_e: ndarray, state with electron coefficients
+    :param state_i: ndarray, state with ion coefficients
+    :param alpha_e: float, velocity shift parameter electrons
+    :param alpha_i: float, velocity shift parameter ions
+    :param E: ndarray, electric field
+    :param q_e: float, charge of electrons
+    :param q_i: float, charge of ions
+    :return: dP/dt
+    """
+    return -2 * dx * (Nv - 1) * E.T @ (q_e * alpha_e * state_e[-1, :]**2
+                                     + q_i * alpha_i * state_i[-1, :]**2)
+
+
+def energy_drift(state_e, state_i, E, Nv, alpha_e, alpha_i, q_e, q_i, dx, m_e, m_i, Nx, u_e, u_i):
+    """dE/dt for SW square-root formulation
+
+    :param state_e: ndarray, state with electron coefficients
+    :param state_i: ndarray, state with ion coefficients
+    :param alpha_e: float, velocity shift parameter electrons
+    :param alpha_i: float, velocity shift parameter ions
+    :param E: ndarray, electric field
+    :param q_e: float, charge of electrons
+    :param q_i: float, charge of ions
+    :param dx: spatial discretization
+    :return: dE/dt
+    """
+    D = ddx_central(Nx=Nx, dx=dx)
+    D_pinv = np.linalg.pinv(D)
+    term1 = -dx * (alpha_e ** 2) * np.sqrt((Nv - 1) / 2) * (Nv / 2) * (
+                -m_e * (alpha_e ** 2) * state_e[-2, :].T @ D @ state_e[-1, :] + q_e * E.T @ (
+                    state_e[-2, :] * state_e[-1, :]))
+    term2 = -dx * (alpha_i ** 2) * np.sqrt((Nv - 1) / 2) * (Nv / 2) * (
+                            -m_i * (alpha_i ** 2) * state_i[-2, :].T @ D @ state_i[-1, :] + q_i * E.T @ (
+                                state_i[-2, :] * state_i[-1, :]))
+
+    term3 = dx * q_e * alpha_e * E.T @ energy_drift_a(state=state_e, Nv=Nv, alpha_s=alpha_e, u_s=u_e)
+    term4 = dx * q_i * alpha_i * E.T @ energy_drift_a(state=state_i, Nv=Nv, alpha_s=alpha_i, u_s=u_i)
+
+    term5 = -2 * dx * q_e * alpha_e * E.T @ energy_drift_b(state=state_e, Nv=Nv, alpha_s=alpha_e, u_s=u_e, D=D)
+    term6 = -2 * dx * q_i * alpha_i * E.T @ energy_drift_b(state=state_i, Nv=Nv, alpha_s=alpha_i, u_s=u_i)
+    return term1 + term2 + term3 + term4 + term5 + term6
+
+
+def energy_drift_a(state, Nv, alpha_s, u_s):
+    """
+
+    :param state: ndarray, array with species coefficients
+    :param Nv: int, number of velocity spectral terms
+    :param alpha_s: float, velocity scaling parameter
+    :param u_s: float, velocity shifting parameter
+    :return:
+    """
+    res = 0
+    for m in range(Nv):
+        term1, term2, term3 = linear_1(state=state, m=m, alpha_s=alpha_s, Nv=Nv, u_s=u_s)
+        res += state[m, :] * (term1 + term2 + term3)
+    return res
+
+
+def energy_drift_b(state, Nv, D, alpha_s, u_s):
+    """
+
+    :param state: ndarray, array with species coefficients
+    :param Nv: int, number of velocity spectral terms
+    :param alpha_s: float, velocity scaling parameter
+    :param u_s: float, velocity shifting parameter
+    :param D: ndarray, finite difference operator
+    :return:
+    """
+    res = 0
+    for m in range(Nv):
+        term1, term2, term3 = linear_1(state=state, m=m, alpha_s=alpha_s, Nv=Nv, u_s=u_s)
+        res += state[m, :] * (D @ (term1 + term2 + term3))
+
+    D_pinv = np.linalg.pinv(D)
+    return D_pinv @ res
