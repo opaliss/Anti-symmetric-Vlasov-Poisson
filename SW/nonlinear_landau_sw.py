@@ -105,7 +105,7 @@ if __name__ == '__main__':
     # initialize the expansion coefficients
     states_e[0, :] = C_0e[:-1]
 
-    # initial condition of the semi-disretized ODE
+    # initial condition of the semi-discretized ODE
     y0 = states_e.flatten("C")
     y0 = np.append(y0, np.zeros(5))
 

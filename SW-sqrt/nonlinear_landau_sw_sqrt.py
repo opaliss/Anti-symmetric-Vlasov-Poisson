@@ -1,12 +1,13 @@
-"""Linear Landau Damping Module SW formulation solved via Vlasov-Poisson
+"""Nonlinear Landau Damping Module SW formulation solved via Vlasov-Poisson
 
 Author: Opal Issan (oissan@ucsd.edu)
-Date: November 21st, 2023
+Date: November 22nd, 2023
 """
 import sys, os
+
 sys.path.append(os.path.abspath(os.path.join('..')))
 import numpy as np
-from operators.SW_sqrt import RHS, solve_poisson_equation, energy_drift, momentum_drift
+from operators.SW_sqrt import RHS, solve_poisson_equation, momentum_drift, energy_drift
 from FD_tools.implicit_midpoint import implicit_midpoint_solver
 
 
@@ -16,7 +17,6 @@ def rhs(y, t):
     # initialize species states
     state_e = np.zeros((Nv, Nx - 1))
     state_i = np.zeros((Nv, Nx - 1))
-
     # static/background ions
     state_i[0, :] = np.sqrt(np.ones(Nx - 1) / alpha_i)
 
@@ -56,7 +56,6 @@ def rhs(y, t):
                              E=E, Nv=Nv, alpha_e=alpha_e,
                              alpha_i=alpha_i, q_e=q_e, q_i=q_i,
                              dx=dx, m_e=m_e, m_i=m_i, Nx=Nx, u_e=u_e, u_i=u_i)
-
     return dydt_
 
 
@@ -67,20 +66,19 @@ if __name__ == '__main__':
     # number of spectral expansions
     Nv = 100
     # epsilon displacement in initial electron distribution
-    epsilon = 1e-2
+    epsilon = 0.5
     # velocity scaling of electron and ion
     alpha_e = np.sqrt(2)
     alpha_i = np.sqrt(2 / 1863)
     # x grid is from 0 to L
-    L = 2 * np.pi
+    L = 4 * np.pi
     # spacial spacing dx = x[i+1] - x[i]
     dx = L / (Nx - 1)
     # time stepping
     dt = 1e-2
-    # final time
+    # final time (non-dimensional)
     T = 10.
-    # timestamp vector
-    t_vec = np.linspace(0, T, int(T/dt)+1)
+    t_vec = np.linspace(0, T, int(T / dt) + 1)
     # velocity scaling
     u_e = 0
     u_i = 0
@@ -95,9 +93,9 @@ if __name__ == '__main__':
     x = np.linspace(0, L, Nx)
 
     # initial condition of the first expansion coefficient
-    C_0e = np.sqrt((1 + epsilon * np.cos(x)) / alpha_e)
+    C_0e = np.sqrt((1 + epsilon * np.cos(0.5 * x)) / alpha_e)
 
-    # initialize states (electrons)
+    # initialize states (electrons and ions)
     states_e = np.zeros((Nv, Nx - 1))
 
     # initialize the expansion coefficients
@@ -111,5 +109,5 @@ if __name__ == '__main__':
     sol_midpoint_u = implicit_midpoint_solver(t_vec=t_vec, y0=y0, rhs=rhs, nonlinear_solver_type="newton_krylov",
                                               r_tol=1e-8, a_tol=1e-14, max_iter=100)
 
-    np.save("../data/SW_sqrt/linear_landau/sol_midpoint_u_100", sol_midpoint_u)
-    np.save("../data/SW_sqrt/linear_landau/sol_midpoint_t_100", t_vec)
+    np.save("../data/SW_sqrt/nonlinear_landau/sol_midpoint_u_101_newton", sol_midpoint_u)
+    np.save("../data/SW_sqrt/nonlinear_landau/sol_midpoint_t_101_newton", t_vec)
