@@ -303,7 +303,7 @@ def energy_drift(state_e, state_i, E, Nv, alpha_e, alpha_i, q_e, q_i, dx, m_e, m
     term4 = dx * q_i * alpha_i * E.T @ energy_drift_a(state=state_i, Nv=Nv, alpha_s=alpha_i, u_s=u_i)
 
     term5 = -2 * dx * q_e * alpha_e * E.T @ energy_drift_b(state=state_e, Nv=Nv, alpha_s=alpha_e, u_s=u_e, D=D)
-    term6 = -2 * dx * q_i * alpha_i * E.T @ energy_drift_b(state=state_i, Nv=Nv, alpha_s=alpha_i, u_s=u_i)
+    term6 = -2 * dx * q_i * alpha_i * E.T @ energy_drift_b(state=state_i, Nv=Nv, alpha_s=alpha_i, u_s=u_i, D=D)
     return term1 + term2 + term3 + term4 + term5 + term6
 
 

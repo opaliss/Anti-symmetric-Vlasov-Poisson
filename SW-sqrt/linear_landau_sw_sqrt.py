@@ -77,7 +77,7 @@ if __name__ == '__main__':
     dx = L / (Nx - 1)
     # time stepping
     dt = 1e-2
-    # final time (nondimensional)
+    # final time
     T = 10.
     # timestamp vector
     t_vec = np.linspace(0, T, int(T/dt)+1)
@@ -111,5 +111,5 @@ if __name__ == '__main__':
     sol_midpoint_u = implicit_midpoint_solver(t_vec=t_vec, y0=y0, rhs=rhs, nonlinear_solver_type="newton_krylov",
                                               r_tol=1e-8, a_tol=1e-14, max_iter=100)
 
-    np.save("../data/SW_sqrt/linear_landau/poisson/sol_midpoint_u_100", sol_midpoint_u)
-    np.save("../data/SW_sqrt/linear_landau/poisson/sol_midpoint_t_100", t_vec)
+    np.save("../data/SW_sqrt/linear_landau/sol_midpoint_u_100", sol_midpoint_u)
+    np.save("../data/SW_sqrt/linear_landau/sol_midpoint_t_100", t_vec)
