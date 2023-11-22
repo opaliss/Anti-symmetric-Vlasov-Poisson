@@ -4,7 +4,6 @@ Author: Opal Issan (oissan@ucsd.edu)
 Date: November 22nd, 2023
 """
 import sys, os
-
 sys.path.append(os.path.abspath(os.path.join('..')))
 import numpy as np
 from operators.SW_sqrt import RHS, solve_poisson_equation, momentum_drift, energy_drift
