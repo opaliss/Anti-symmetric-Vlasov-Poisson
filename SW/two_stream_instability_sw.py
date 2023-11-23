@@ -93,7 +93,6 @@ def rhs(y, t):
             + q_e2 ** 2 / m_e2 * D_pinv @ (E * state_e2[-1, :])
             + q_i ** 2 / m_i * D_pinv @ (E * state_i[-1, :]))
 
-    print("time = ", t)
     return dydt_
 
 

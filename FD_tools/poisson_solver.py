@@ -27,7 +27,7 @@ def gmres_solver(rhs, dx, periodic=True, order="ddx", order_fd=2):
         # second order derivative matrix
         A = d2dx2_central(Nx=len(rhs) + 1, dx=dx, periodic=periodic, order=order_fd)
 
-    x, _ = gmres(csc_matrix(A), rhs - np.mean(rhs), atol=1e-15, tol=1e-8)
+    x, _ = gmres(csc_matrix(A), rhs - np.mean(rhs), atol=1e-15, tol=1e-15)
     return x - np.mean(x)
 
 

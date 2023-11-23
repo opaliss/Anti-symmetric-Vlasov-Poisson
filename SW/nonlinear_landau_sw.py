@@ -1,7 +1,7 @@
 """Nonlinear Landau Damping Module SW formulation solved via Vlasov-Poisson
 
 Author: Opal Issan (oissan@ucsd.edu)
-Date: November 21st, 2023
+Date: November 22nd, 2023
 """
 import sys, os
 sys.path.append(os.path.abspath(os.path.join('..')))
@@ -67,7 +67,7 @@ if __name__ == '__main__':
     # number of mesh points in x
     Nx = 101
     # number of spectral expansions
-    Nv = 100
+    Nv = 101
     # epsilon displacement in initial electron distribution
     epsilon = 0.5
     # velocity scaling of electron and ion
@@ -114,5 +114,5 @@ if __name__ == '__main__':
                                               r_tol=1e-8, a_tol=1e-14, max_iter=100)
 
     # save results
-    np.save("../data/SW/nonlinear_landau/sol_midpoint_u_100", sol_midpoint_u)
-    np.save("../data/SW/nonlinear_landau/sol_midpoint_t_100", t_vec)
+    np.save("../data/SW/nonlinear_landau/sol_midpoint_u_101", sol_midpoint_u)
+    np.save("../data/SW/nonlinear_landau/sol_midpoint_t_101", t_vec)
