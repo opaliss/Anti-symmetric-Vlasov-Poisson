@@ -277,6 +277,28 @@ def momentum_drift(state_e, state_i, E, Nv, alpha_e, alpha_i, q_e, q_i, dx):
                                        + q_i * alpha_i * state_i[-1, :] ** 2)
 
 
+def momentum_drift_two_stream(state_e1, state_e2, state_i, E, Nv, alpha_e1, alpha_e2, alpha_i, q_e1, q_e2, q_i, dx):
+    """dP/dt for SW square-root formulation
+
+    :param state_e1: ndarray, state with electron coefficients (species 1)
+    :param state_e2: ndarray, state with electron coefficients (species 2)
+    :param state_i: ndarray, state with ion coefficients
+    :param alpha_e1: float, velocity scaling parameter electron species 1
+    :param alpha_e2: float, velocity scaling parameter electron species 2
+    :param alpha_i: float, velocity scaling parameter ions
+    :param E: ndarray, electric field
+    :param q_e1: float, charge of electrons species 1
+    :param q_e2: float, charge of electrons species 2
+    :param q_i: float, charge of ions
+    :param Nv: int, number of velocity spectral terms
+    :param dx: the spatial grid spacing
+    :return: dP/dt
+    """
+    return -2 * dx * (Nv - 1) * E.T @ (q_e1 * alpha_e1 * state_e1[-1, :] ** 2
+                                       + q_e2 * alpha_e2 * state_e2[-1, :] ** 2
+                                       + q_i * alpha_i * state_i[-1, :] ** 2)
+
+
 def energy_drift(state_e, state_i, E, Nv, alpha_e, alpha_i, q_e, q_i, dx, m_e, m_i, Nx, u_e, u_i):
     """dE/dt for SW square-root formulation
 
@@ -291,7 +313,6 @@ def energy_drift(state_e, state_i, E, Nv, alpha_e, alpha_i, q_e, q_i, dx, m_e, m
     :return: dE/dt
     """
     D = ddx_central(Nx=Nx, dx=dx)
-    D_pinv = np.linalg.pinv(D)
     term1 = -dx * (alpha_e ** 2) * np.sqrt((Nv - 1) / 2) * (Nv / 2) * (
             -m_e * (alpha_e ** 2) * state_e[-2, :].T @ D @ state_e[-1, :] + q_e * E.T @ (
             state_e[-2, :] * state_e[-1, :]))
@@ -306,6 +327,53 @@ def energy_drift(state_e, state_i, E, Nv, alpha_e, alpha_i, q_e, q_i, dx, m_e, m
     term6 = -2 * dx * q_i * alpha_i * E.T @ energy_drift_b(state=state_i, Nv=Nv, alpha_s=alpha_i, u_s=u_i, D=D)
     return term1 + term2 + term3 + term4 + term5 + term6
 
+
+def energy_drift_two_stream(state_e1, state_e2,  state_i, E, Nv, alpha_e1, alpha_e2, alpha_i, q_e1, q_e2,
+                            q_i, dx, m_e1, m_e2,  m_i, Nx, u_e1, u_e2,  u_i):
+    """dE/dt for SW square-root formulation
+
+    :param state_e1: ndarray, state with electron species 1 coefficients
+    :param state_e2: ndarray, state with electron species 2 coefficients
+    :param state_i: ndarray, state with ion coefficients
+    :param alpha_e1: float, velocity scaling parameter electrons species 1
+    :param alpha_e2: float, velocity scaling parameter electrons species 2
+    :param alpha_i: float, velocity shift parameter ions
+    :param E: ndarray, electric field
+    :param q_e1: float, charge of electrons species 1
+    :param q_e2: float, charge of electrons species 2
+    :param q_i: float, charge of ions
+    :param dx: spatial discretization
+    :param m_e1: float, mass of electrons species 1
+    :param m_e2: float, mass of electrons species 2
+    :param m_i:, float, mass of ions
+    :param Nx: int, number of spatial grid points
+    :param u_e1: float, velocity shifting parameter electrons species 1
+    :param u_e2: float, velocity shifting parameter electrons species 2
+    :param u_i: float, velocity shifting parameter ions
+    :return: dE/dt
+    """
+    D = ddx_central(Nx=Nx, dx=dx)
+    # electron species 1
+    term1 = -dx * (alpha_e1 ** 2) * np.sqrt((Nv - 1) / 2) * (Nv / 2) * (
+            -m_e1 * (alpha_e1 ** 2) * state_e1[-2, :].T @ D @ state_e1[-1, :] + q_e1 * E.T @ (
+            state_e1[-2, :] * state_e1[-1, :]))
+    # electron species 2
+    term2 = -dx * (alpha_e2 ** 2) * np.sqrt((Nv - 1) / 2) * (Nv / 2) * (
+            -m_e2 * (alpha_e2 ** 2) * state_e2[-2, :].T @ D @ state_e2[-1, :] + q_e2 * E.T @ (
+            state_e2[-2, :] * state_e2[-1, :]))
+    # ions
+    term3 = -dx * (alpha_i ** 2) * np.sqrt((Nv - 1) / 2) * (Nv / 2) * (
+            -m_i * (alpha_i ** 2) * state_i[-2, :].T @ D @ state_i[-1, :] + q_i * E.T @ (
+            state_i[-2, :] * state_i[-1, :]))
+
+    term4 = dx * q_e1 * alpha_e1 * E.T @ energy_drift_a(state=state_e1, Nv=Nv, alpha_s=alpha_e1, u_s=u_e1)
+    term5 = dx * q_e2 * alpha_e2 * E.T @ energy_drift_a(state=state_e2, Nv=Nv, alpha_s=alpha_e2, u_s=u_e2)
+    term6 = dx * q_i * alpha_i * E.T @ energy_drift_a(state=state_i, Nv=Nv, alpha_s=alpha_i, u_s=u_i)
+
+    term7 = -2 * dx * q_e1 * alpha_e1 * E.T @ energy_drift_b(state=state_e1, Nv=Nv, alpha_s=alpha_e1, u_s=u_e1, D=D)
+    term8 = -2 * dx * q_e2 * alpha_e2 * E.T @ energy_drift_b(state=state_e2, Nv=Nv, alpha_s=alpha_e2, u_s=u_e2, D=D)
+    term9 = -2 * dx * q_i * alpha_i * E.T @ energy_drift_b(state=state_i, Nv=Nv, alpha_s=alpha_i, u_s=u_i, D=D)
+    return term1 + term2 + term3 + term4 + term5 + term6 + term7 + term8 + term9
 
 def energy_drift_a(state, Nv, alpha_s, u_s):
     """
@@ -434,4 +502,4 @@ def energy_k(state, Nv, alpha_s, m_s, dx, u_s):
     return dx * m_s * alpha_s * (alpha_s ** 2 * energy_k_term1(state=state, Nv=Nv)
                                  + 0.5 * (u_s ** 2 + 0.5 * alpha_s ** 2) * mass_term(state=state, Nv=Nv)
                                  + 2 * u_s * alpha_s * momentum_term(state=state, Nv=Nv)
-                                 + (alpha_s**2) * energy_k_term2(state=state, Nv=Nv))
+                                 + (alpha_s ** 2) * energy_k_term2(state=state, Nv=Nv))
