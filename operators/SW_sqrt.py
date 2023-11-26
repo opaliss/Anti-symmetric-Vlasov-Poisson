@@ -325,7 +325,11 @@ def energy_drift(state_e, state_i, E, Nv, alpha_e, alpha_i, q_e, q_i, dx, m_e, m
 
     term5 = -2 * dx * q_e * alpha_e * E.T @ energy_drift_b(state=state_e, Nv=Nv, alpha_s=alpha_e, u_s=u_e, D=D)
     term6 = -2 * dx * q_i * alpha_i * E.T @ energy_drift_b(state=state_i, Nv=Nv, alpha_s=alpha_i, u_s=u_i, D=D)
-    return term1 + term2 + term3 + term4 + term5 + term6
+
+    term7 = -dx * Nv * E.T @ (q_e * u_e * alpha_e * state_e[-1, :] ** 2)
+    term8 = -dx * Nv * E.T @ (q_i * u_i * alpha_i * state_i[-1, :] ** 2)
+
+    return term1 + term2 + term3 + term4 + term5 + term6 + term7 + term8
 
 
 def energy_drift_two_stream(state_e1, state_e2,  state_i, E, Nv, alpha_e1, alpha_e2, alpha_i, q_e1, q_e2,
@@ -373,7 +377,11 @@ def energy_drift_two_stream(state_e1, state_e2,  state_i, E, Nv, alpha_e1, alpha
     term7 = -2 * dx * q_e1 * alpha_e1 * E.T @ energy_drift_b(state=state_e1, Nv=Nv, alpha_s=alpha_e1, u_s=u_e1, D=D)
     term8 = -2 * dx * q_e2 * alpha_e2 * E.T @ energy_drift_b(state=state_e2, Nv=Nv, alpha_s=alpha_e2, u_s=u_e2, D=D)
     term9 = -2 * dx * q_i * alpha_i * E.T @ energy_drift_b(state=state_i, Nv=Nv, alpha_s=alpha_i, u_s=u_i, D=D)
-    return term1 + term2 + term3 + term4 + term5 + term6 + term7 + term8 + term9
+
+    term10 = -dx * Nv * E.T @ (q_e1 * u_e1 * alpha_e1 * state_e1[-1, :] ** 2)
+    term11 = -dx * Nv * E.T @ (q_e2 * u_e2 * alpha_e2 * state_e2[-1, :] ** 2)
+    term12 = -dx * Nv * E.T @ (q_i * u_i * alpha_i * state_i[-1, :] ** 2)
+    return term1 + term2 + term3 + term4 + term5 + term6 + term7 + term8 + term9 + term10 + term11 + term12
 
 def energy_drift_a(state, Nv, alpha_s, u_s):
     """
