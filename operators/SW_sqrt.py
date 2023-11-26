@@ -273,8 +273,8 @@ def momentum_drift(state_e, state_i, E, Nv, alpha_e, alpha_i, q_e, q_i, dx):
     :param q_i: float, charge of ions
     :return: dP/dt
     """
-    return -2 * dx * (Nv - 1) * E.T @ (q_e * alpha_e * state_e[-1, :] ** 2
-                                       + q_i * alpha_i * state_i[-1, :] ** 2)
+    return - dx * Nv * E.T @ (q_e * alpha_e * state_e[-1, :] ** 2
+                            + q_i * alpha_i * state_i[-1, :] ** 2)
 
 
 def momentum_drift_two_stream(state_e1, state_e2, state_i, E, Nv, alpha_e1, alpha_e2, alpha_i, q_e1, q_e2, q_i, dx):
@@ -294,7 +294,7 @@ def momentum_drift_two_stream(state_e1, state_e2, state_i, E, Nv, alpha_e1, alph
     :param dx: the spatial grid spacing
     :return: dP/dt
     """
-    return -2 * dx * (Nv - 1) * E.T @ (q_e1 * alpha_e1 * state_e1[-1, :] ** 2
+    return - dx * Nv * E.T @ (q_e1 * alpha_e1 * state_e1[-1, :] ** 2
                                        + q_e2 * alpha_e2 * state_e2[-1, :] ** 2
                                        + q_i * alpha_i * state_i[-1, :] ** 2)
 
