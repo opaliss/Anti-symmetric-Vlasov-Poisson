@@ -28,6 +28,7 @@ def gmres_solver(rhs, dx, periodic=True, order="ddx", order_fd=2):
         A = d2dx2_central(Nx=len(rhs) + 1, dx=dx, periodic=periodic, order=order_fd)
 
     x, _ = gmres(csc_matrix(A), rhs - np.mean(rhs), atol=1e-15, tol=1e-15)
+    print("charge neutrality = ", np.mean(rhs))
     return x - np.mean(x)
 
 

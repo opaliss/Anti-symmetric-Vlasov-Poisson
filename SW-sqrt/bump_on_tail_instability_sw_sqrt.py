@@ -121,8 +121,8 @@ if __name__ == '__main__':
     x = np.linspace(0, L, Nx)
 
     # initial condition of the first expansion coefficient
-    C_0e1 = np.sqrt(0.9 * (1 + epsilon * np.cos(x)) / alpha_e1)
-    C_0e2 = np.sqrt(0.1 * (1 + epsilon * np.cos(x)) / alpha_e2)
+    C_0e1 = np.sqrt(0.9 * (1 + epsilon * np.cos(0.3 * x)) / alpha_e1)
+    C_0e2 = np.sqrt(0.1 * (1 + epsilon * np.cos(0.3 * x)) / alpha_e2)
 
     # initialize states (electrons type 1 and 2)
     states_e1 = np.zeros((Nv, Nx - 1))
