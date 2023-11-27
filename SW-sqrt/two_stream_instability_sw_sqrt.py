@@ -61,23 +61,23 @@ def rhs(y, t):
                                                                                         E=E,
                                                                                         u_s=u_e2)
 
-        # # momentum drift
-        # dydt_[-2] = momentum_drift_two_stream(state_e1=state_e1,
-        #                                       state_e2=state_e2,
-        #                                       state_i=state_i,
-        #                                       E=E, Nv=Nv, alpha_e1=alpha_e1,
-        #                                       alpha_e2=alpha_e2, alpha_i=alpha_i,
-        #                                       q_e1=q_e1, q_e2=q_e2, q_i=q_i, dx=dx)
-        #
-        # # energy drift
-        # dydt_[-1] = energy_drift_two_stream(state_e1=state_e1,
-        #                                     state_e2=state_e2,
-        #                                     state_i=state_i,
-        #                                     E=E, Nv=Nv,
-        #                                     alpha_e1=alpha_e1, alpha_e2=alpha_e2, alpha_i=alpha_i,
-        #                                     q_e1=q_e1, q_e2=q_e2, q_i=q_i, dx=dx,
-        #                                     m_e1=m_e1, m_e2=m_e2, m_i=m_i, Nx=Nx,
-        #                                     u_e1=u_e1, u_e2=u_e2, u_i=u_i)
+    # momentum drift
+    dydt_[-2] = momentum_drift_two_stream(state_e1=state_e1,
+                                          state_e2=state_e2,
+                                          state_i=state_i,
+                                          E=E, Nv=Nv, alpha_e1=alpha_e1,
+                                          alpha_e2=alpha_e2, alpha_i=alpha_i,
+                                          q_e1=q_e1, q_e2=q_e2, q_i=q_i, dx=dx)
+
+    # energy drift
+    dydt_[-1] = energy_drift_two_stream(state_e1=state_e1,
+                                        state_e2=state_e2,
+                                        state_i=state_i,
+                                        E=E, Nv=Nv,
+                                        alpha_e1=alpha_e1, alpha_e2=alpha_e2, alpha_i=alpha_i,
+                                        q_e1=q_e1, q_e2=q_e2, q_i=q_i, dx=dx,
+                                        m_e1=m_e1, m_e2=m_e2, m_i=m_i, Nx=Nx,
+                                        u_e1=u_e1, u_e2=u_e2, u_i=u_i)
 
     return dydt_
 
@@ -143,5 +143,5 @@ if __name__ == '__main__':
                                               nonlinear_solver_type="newton_krylov",
                                               r_tol=1e-8, a_tol=1e-14, max_iter=100)
 
-    np.save("../data/SW_sqrt/two_stream/sol_midpoint_u_101", sol_midpoint_u)
-    np.save("../data/SW_sqrt/two_stream/sol_midpoint_t_101", t_vec)
+    np.save("../data/SW_sqrt/two_stream/sol_midpoint_u_" + str(Nv), sol_midpoint_u)
+    np.save("../data/SW_sqrt/two_stream/sol_midpoint_t_" + str(Nv), t_vec)

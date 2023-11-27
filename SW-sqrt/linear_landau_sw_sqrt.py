@@ -111,5 +111,5 @@ if __name__ == '__main__':
     sol_midpoint_u = implicit_midpoint_solver(t_vec=t_vec, y0=y0, rhs=rhs, nonlinear_solver_type="newton_krylov",
                                               r_tol=1e-8, a_tol=1e-14, max_iter=100)
 
-    np.save("../data/SW_sqrt/linear_landau/sol_midpoint_u_101", sol_midpoint_u)
-    np.save("../data/SW_sqrt/linear_landau/sol_midpoint_t_101", t_vec)
+    np.save("../data/SW_sqrt/linear_landau/sol_midpoint_u_" + str(Nv), sol_midpoint_u)
+    np.save("../data/SW_sqrt/linear_landau/sol_midpoint_t_" + str(Nv), t_vec)

@@ -114,5 +114,5 @@ if __name__ == '__main__':
                                               r_tol=1e-8, a_tol=1e-14, max_iter=100)
 
     # save results
-    np.save("../data/SW/nonlinear_landau/sol_midpoint_u_101", sol_midpoint_u)
-    np.save("../data/SW/nonlinear_landau/sol_midpoint_t_101", t_vec)
+    np.save("../data/SW/nonlinear_landau/sol_midpoint_u_" + str(Nv), sol_midpoint_u)
+    np.save("../data/SW/nonlinear_landau/sol_midpoint_t_" + str(Nv), t_vec)
