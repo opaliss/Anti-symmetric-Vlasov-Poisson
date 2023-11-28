@@ -1,22 +1,19 @@
 """Vlasov-Poisson operators for the SW formulation
 
 Author: Opal Issan (oissan@ucsd.edu)
-Last Update: November 20th, 2023
+Last Update: November 27th, 2023
 """
 import numpy as np
 from FD_tools.poisson_solver import gmres_solver, fft_solver, fft_solver_Ax_b
-import scipy
 
 
 def integral_I0(n):
     """
-    :param n: the order of the integral
+    :param n: int, the order of the integral
     :return: the integral I0_{n}
     """
     if n < 0:
         return 0
-    # elif n > Nv - 1:
-    #     return 0
     elif n == 0:
         return np.sqrt(2) * (np.pi ** (1 / 4))
     elif n % 2 == 1:
@@ -31,9 +28,9 @@ def integral_I0(n):
 
 def integral_I1(n, u_s, alpha_s):
     """
-    :param n: order of the integral
-    :param u_s: the velocity shifting of species s
-    :param alpha_s: the velocity scaling of species s
+    :param n: int, order of the integral
+    :param u_s: float, the velocity shifting of species s
+    :param alpha_s: float, the velocity scaling of species s
     :return: the integral I1_{n}
     """
     if n % 2 == 0:
@@ -45,9 +42,9 @@ def integral_I1(n, u_s, alpha_s):
 def integral_I2(n, u_s, alpha_s):
     """integral I2 in SW formulation
 
-    :param n: order of the integral
-    :param u_s: the velocity shifting of species s
-    :param alpha_s: the velocity scaling of species s
+    :param n: int, order of the integral
+    :param u_s: float, the velocity shifting of species s
+    :param alpha_s: float, the velocity scaling of species s
     :return: the integral I2_{n}
     """
     if n % 2 == 0:
@@ -182,8 +179,8 @@ def momentum(state, u_s, alpha_s, Nv):
 
     :param state: ndarray, electron or ion state
     :param Nv: int, number of velocity Hermite spectral terms
-    :param u_s, float, the velocity shifting parameter
-    :param alpha_s, float, the velocity scaling parameter
+    :param u_s: float, the velocity shifting parameter of species s
+    :param alpha_s: float, the velocity scaling parameter of species s
     :return: momentum for the state
     """
     res = 0
@@ -197,8 +194,8 @@ def energy_k(state, u_s, alpha_s, Nv):
 
     :param state: ndarray, electron or ion state
     :param Nv: int, number of velocity Hermite spectral terms
-    :param u_s, float, the velocity shifting parameter
-    :param alpha_s, float, the velocity scaling parameter
+    :param u_s: float, the velocity shifting parameter of species s
+    :param alpha_s: float, the velocity scaling parameter of species s
     :return: kinetic energy for the state
     """
     res = 0
@@ -226,7 +223,7 @@ def total_momentum(state, alpha_s, dx, Nv, m_s, u_s):
     :param alpha_s: float, velocity scaling of species s
     :param dx: float, spatial spacing
     :param Nv: int, the number of velocity spectral terms
-    :param m_e: float, mass of species s
+    :param m_s: float, mass of species s
     :param u_s: float, velocity shifting parameter of species s
     :return: total momentum of single electron and ion setup
     """
