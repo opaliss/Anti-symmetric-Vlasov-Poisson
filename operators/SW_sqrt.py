@@ -1,4 +1,4 @@
-"""Vlasov-Poisson operators for the SW-sqrt formulation
+"""Vlasov-Poisson operators for the SW_sqrt formulation
 
 Author: Opal Issan (oissan@ucsd.edu)
 Last Updated: November 27th, 2023
