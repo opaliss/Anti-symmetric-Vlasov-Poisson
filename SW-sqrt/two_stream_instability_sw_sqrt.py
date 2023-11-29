@@ -87,7 +87,7 @@ if __name__ == '__main__':
     # number of mesh points in x
     Nx = 101
     # number of spectral expansions
-    Nv = 101
+    Nv = 100
     # epsilon displacement in initial electron distribution
     epsilon = 1e-3
     # velocity scaling of electron and ion

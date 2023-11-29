@@ -1,7 +1,7 @@
 """Vlasov-Poisson operators for the SW-sqrt formulation
 
 Author: Opal Issan (oissan@ucsd.edu)
-Last Updated: November 20th, 2023
+Last Updated: November 27th, 2023
 """
 from FD_tools.poisson_solver import gmres_solver, fft_solver, fft_solver_Ax_b
 from FD_tools.finite_difference_operators import ddx_central, ddx_fwd, ddx_bwd
@@ -274,7 +274,7 @@ def momentum_drift(state_e, state_i, E, Nv, alpha_e, alpha_i, q_e, q_i, dx):
     :return: dP/dt
     """
     return - dx * Nv * E.T @ (q_e * alpha_e * state_e[-1, :] ** 2
-                            + q_i * alpha_i * state_i[-1, :] ** 2)
+                              + q_i * alpha_i * state_i[-1, :] ** 2)
 
 
 def momentum_drift_two_stream(state_e1, state_e2, state_i, E, Nv, alpha_e1, alpha_e2, alpha_i, q_e1, q_e2, q_i, dx):
@@ -295,13 +295,18 @@ def momentum_drift_two_stream(state_e1, state_e2, state_i, E, Nv, alpha_e1, alph
     :return: dP/dt
     """
     return - dx * Nv * E.T @ (q_e1 * alpha_e1 * state_e1[-1, :] ** 2
-                                       + q_e2 * alpha_e2 * state_e2[-1, :] ** 2
-                                       + q_i * alpha_i * state_i[-1, :] ** 2)
+                              + q_e2 * alpha_e2 * state_e2[-1, :] ** 2
+                              + q_i * alpha_i * state_i[-1, :] ** 2)
 
 
 def energy_drift(state_e, state_i, E, Nv, alpha_e, alpha_i, q_e, q_i, dx, m_e, m_i, Nx, u_e, u_i):
     """dE/dt for SW square-root formulation
 
+    :param u_i: float, electrons velocity shifting
+    :param u_e: float, ions velocity shifting
+    :param Nx: int, number of spatial grid points
+    :param m_i: float, mass of ions
+    :param m_e: float, mass of electrons
     :param state_e: ndarray, state with electron coefficients
     :param state_i: ndarray, state with ion coefficients
     :param alpha_e: float, velocity shift parameter electrons
@@ -332,8 +337,8 @@ def energy_drift(state_e, state_i, E, Nv, alpha_e, alpha_i, q_e, q_i, dx, m_e, m
     return term1 + term2 + term3 + term4 + term5 + term6 + term7 + term8
 
 
-def energy_drift_two_stream(state_e1, state_e2,  state_i, E, Nv, alpha_e1, alpha_e2, alpha_i, q_e1, q_e2,
-                            q_i, dx, m_e1, m_e2,  m_i, Nx, u_e1, u_e2,  u_i):
+def energy_drift_two_stream(state_e1, state_e2, state_i, E, Nv, alpha_e1, alpha_e2, alpha_i, q_e1, q_e2,
+                            q_i, dx, m_e1, m_e2, m_i, Nx, u_e1, u_e2, u_i):
     """dE/dt for SW square-root formulation
 
     :param state_e1: ndarray, state with electron species 1 coefficients
@@ -382,6 +387,7 @@ def energy_drift_two_stream(state_e1, state_e2,  state_i, E, Nv, alpha_e1, alpha
     term11 = -dx * Nv * E.T @ (q_e2 * u_e2 * alpha_e2 * state_e2[-1, :] ** 2)
     term12 = -dx * Nv * E.T @ (q_i * u_i * alpha_i * state_i[-1, :] ** 2)
     return term1 + term2 + term3 + term4 + term5 + term6 + term7 + term8 + term9 + term10 + term11 + term12
+
 
 def energy_drift_a(state, Nv, alpha_s, u_s):
     """
