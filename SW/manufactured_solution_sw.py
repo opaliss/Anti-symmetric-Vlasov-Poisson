@@ -43,7 +43,7 @@ if __name__ == '__main__':
     # spatial length
     L = 2 * np.pi
     # number of grid points in space
-    Nx = 201
+    Nx = 401
     # grid spacing
     dx = L / (Nx - 1)
     # final time step
