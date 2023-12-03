@@ -86,14 +86,30 @@ def implicit_midpoint_solver(t_vec, y0, rhs, nonlinear_solver_type="newton_krylo
                                                  rtol=r_tol)
 
         elif nonlinear_solver_type == "newton_krylov":
-            y_sol[:, tt] = scipy.optimize.newton_krylov(F=lambda y: implicit_nonlinear_equation(y_new=y,
-                                                                                                y_old=y_sol[:, tt - 1],
-                                                                                                rhs=rhs,
-                                                                                                dt=dt[tt - 1],
-                                                                                                t_old=t_vec[tt - 1]),
-                                                        xin=y_sol[:, tt - 1],
-                                                        maxiter=max_iter,
-                                                        f_tol=a_tol,
-                                                        f_rtol=r_tol,
-                                                        verbose=True)
+            try:
+                y_sol[:, tt] = scipy.optimize.newton_krylov(F=lambda y: implicit_nonlinear_equation(y_new=y,
+                                                                                                    y_old=y_sol[:, tt - 1],
+                                                                                                    rhs=rhs,
+                                                                                                    dt=dt[tt - 1],
+                                                                                                    t_old=t_vec[tt - 1]),
+                                                            xin=y_sol[:, tt - 1],
+                                                            maxiter=max_iter,
+                                                            f_tol=a_tol,
+                                                            f_rtol=r_tol,
+                                                            verbose=True)
+            except Exception:
+                print("increase tolerance by factor of 100")
+                try:
+                    y_sol[:, tt] = scipy.optimize.newton_krylov(F=lambda y: implicit_nonlinear_equation(y_new=y,
+                                                                                                        y_old=y_sol[:, tt - 1],
+                                                                                                        rhs=rhs,
+                                                                                                        dt=dt[tt - 1],
+                                                                                                        t_old=t_vec[tt - 1]),
+                                                                xin=y_sol[:, tt - 1],
+                                                                maxiter=max_iter,
+                                                                f_tol=100*a_tol,
+                                                                f_rtol=r_tol,
+                                                                verbose=True)
+                except Exception:
+                    return y_sol
     return y_sol

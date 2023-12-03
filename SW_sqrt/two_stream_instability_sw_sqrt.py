@@ -101,9 +101,9 @@ if __name__ == '__main__':
     # time stepping
     dt = 1e-2
     # final time
-    T = 43.5
+    T = 45
     # timestamp vector
-    t_vec = np.linspace(0, T, int(T / dt) + 1)
+    t_vec = np.linspace(44.1, T, int((T-44.1) / dt) + 1)
     # velocity scaling
     u_e1 = 1
     u_e2 = -1
@@ -141,7 +141,7 @@ if __name__ == '__main__':
     # integrate (symplectic integrator: implicit midpoint)
     sol_midpoint_u = implicit_midpoint_solver(t_vec=t_vec, y0=y0, rhs=rhs,
                                               nonlinear_solver_type="newton_krylov",
-                                              r_tol=1e-8, a_tol=1e-14, max_iter=100)
+                                              r_tol=1e-8, a_tol=1e-14, max_iter=20)
 
     np.save("../data/SW_sqrt/two_stream/sol_midpoint_u_" + str(Nv), sol_midpoint_u)
     np.save("../data/SW_sqrt/two_stream/sol_midpoint_t_" + str(Nv), t_vec)
