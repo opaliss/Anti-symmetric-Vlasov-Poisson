@@ -41,18 +41,27 @@ def linear_1(state, m, alpha_s, Nv, u_s):
         return term1, term2, term3
 
 
-def psi_ln_sw(xi, n):
-    """the Hermite basis function psi_{n}(xi_{s})
-
-    :param xi: float or ndarray, xi^{s} scaled velocity, i.e. xi = (v - u^{s})/alpha^{s}
-    :param n: int, order of polynomial
-    :return: symmetrically weighted hermite polynomial of degree n evaluated at xi
+def psi_ln_aw(xi, n, alpha_s, u_s, v):
     """
-    # hermite polynomial of degree n
-    hermite_function = hermite(n=n)
-    # (pi *2^n n!)^{-1/2}
-    factor = (np.sqrt(np.pi) * (2 ** n) * factorial(n=n)) ** (-1 / 2)
-    return factor * hermite_function(xi) * np.exp(0.5 * (-xi ** 2))
+    :param alpha_s: float, velocity scaling parameter
+    :param u_s, float, velocity shifting parameter
+    :param v: float or array, the velocity coordinate sampled at version points
+    :param xi: float or array, xi^{s} scaled velocity, i.e. xi = (v - u^{s})/alpha^{s}
+    :param n: int, order of polynomial
+    :return: float or array,  asymmetrically weighted (AW) hermite polynomial of degree n evaluated at xi
+    """
+    if n == 0:
+        return np.exp(-xi ** 2) / np.sqrt(np.pi)
+    if n == 1:
+        return np.exp(-xi ** 2) * (2*xi)/np.sqrt(2*np.pi)
+    else:
+        psi = np.zeros((n+1, len(xi)))
+        psi[0, :] = np.exp(-xi ** 2) / np.sqrt(np.pi)
+        psi[1, :] = np.exp(-xi ** 2) * (2*xi)/np.sqrt(2*np.pi)
+        for jj in range(1, n):
+            factor = - alpha_s * np.sqrt((jj+1)/2)
+            psi[jj+1, :] = (alpha_s * np.sqrt(jj/2) * psi[jj-1, :] + u_s * psi[jj, :] - v * psi[jj, :]) / factor
+    return psi[n, :]
 
 
 def nonlinear(state, m, alpha_s, q_s, m_s, E, Nv):
