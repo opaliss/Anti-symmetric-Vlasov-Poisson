@@ -80,7 +80,7 @@ if __name__ == '__main__':
     # time stepping
     dt = 1e-2
     # final time
-    T = 10.
+    T = 50.
     # vector with timestamps
     t_vec = np.linspace(0, T, int(T/dt) + 1)
     # velocity scaling
