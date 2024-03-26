@@ -1,7 +1,13 @@
-"""Nonlinear Landau Damping Module SW formulation solved via Vlasov-Poisson
+"""ion-acoustic wave module SW formulation solved via Vlasov-Poisson
 
 Author: Opal Issan (oissan@ucsd.edu)
-Date: November 24th, 2023
+Date: March 25th, 2024
+
+Nx=16;Nn=50;nu=1e0;dt=0.01;T=400;Nt=T/dt;
+axe=sqrt(2);uxe=0;
+axi=sqrt(2)/135;uxi=0;Lx=10; % IAW
+mass ratio = hydrogren mass ratio 1863
+ions are cold dampens quickly/ probably does not need a lot of basis because its cold
 """
 import sys, os
 sys.path.append(os.path.abspath(os.path.join('..')))
@@ -16,12 +22,11 @@ def rhs(y, t):
     # initialize species states
     state_e = np.zeros((Nv, Nx - 1))
     state_i = np.zeros((Nv, Nx - 1))
-    # static/background ions
-    state_i[0, :] = np.sqrt(np.ones(Nx - 1) / alpha_i)
 
     # re-arrange the states into matrix form [Nv, Nx]
     for jj in range(Nv):
         state_e[jj, :] = y[jj * (Nx - 1): (jj + 1) * (Nx - 1)]
+        state_i[jj, :] = y[Nv * (Nx - 1) + jj * (Nx - 1): Nv * (Nx - 1) + (jj + 1) * (Nx - 1)]
 
     # Poisson equation solver
     E = solve_poisson_equation(state_e=state_e,
@@ -44,6 +49,17 @@ def rhs(y, t):
                                                         E=E,
                                                         u_s=u_e)
 
+        dydt_[Nv * (Nx - 1) + jj * (Nx - 1): Nv * (Nx - 1) + (jj + 1) * (Nx - 1)] = RHS(state=state_i,
+                                                                                        m=jj,
+                                                                                        Nv=Nv,
+                                                                                        alpha_s=alpha_i,
+                                                                                        q_s=q_i,
+                                                                                        dx=dx,
+                                                                                        Nx=Nx,
+                                                                                        m_s=m_i,
+                                                                                        E=E,
+                                                                                        u_s=u_i)
+
     # momentum drift
     dydt_[-2] = momentum_drift(state_e=state_e,
                                state_i=state_i,
@@ -64,27 +80,26 @@ if __name__ == '__main__':
     Nx = 101
     # number of spectral expansions
     Nv = 100
-    # epsilon displacement in initial electron distribution
-    epsilon = 0.5
+    # epsilon displacement in initial ion distribution
+    epsilon = 0.01
     # velocity scaling of electron and ion
-    alpha_e = np.sqrt(2)
-    alpha_i = np.sqrt(2 / 1863)
+    alpha_e = 1
+    alpha_i = 1 / 135
     # x grid is from 0 to L
-    L = 4 * np.pi
+    L = 10
     # spacial spacing dx = x[i+1] - x[i]
     dx = L / (Nx - 1)
     # time stepping
-    dt = 1e-2
+    dt = 0.05
     # final time (non-dimensional)
-    T = 50.
-    # vector with timestamps
+    T = 100.
     t_vec = np.linspace(0, T, int(T / dt) + 1)
     # velocity scaling
     u_e = 0
     u_i = 0
     # mass normalized
     m_e = 1
-    m_i = 1863
+    m_i = 1836
     # charge normalized
     q_e = -1
     q_i = 1
@@ -92,22 +107,21 @@ if __name__ == '__main__':
     # spatial grid
     x = np.linspace(0, L, Nx)
 
-    # initial condition of the first expansion coefficient
-    C_0e = np.sqrt((1 + epsilon * np.cos(0.5 * x)) / alpha_e)
-
     # initialize states (electrons and ions)
-    states_e = np.zeros((Nv, Nx - 1))
+    states_e = np.zeros((Nv, Nx-1))
+    states_i = np.zeros((Nv, Nx-1))
 
     # initialize the expansion coefficients
-    states_e[0, :] = C_0e[:-1]
+    states_e[0, :] = np.sqrt(1 / alpha_e * np.ones(Nx))[:-1]
+    states_i[0, :] = np.sqrt((1 + epsilon * np.cos(2*np.pi*x/L)) / alpha_i)[:-1]
 
     # initial condition of the semi-discretized ODE
-    y0 = states_e.flatten("C")
+    y0 = np.append(states_e.flatten("C"), states_i.flatten("C"))
     y0 = np.append(y0, np.zeros(2))
 
     # set up implicit midpoint with newton-krylov solver
     sol_midpoint_u = implicit_midpoint_solver(t_vec=t_vec, y0=y0, rhs=rhs, nonlinear_solver_type="newton_krylov",
                                               r_tol=1e-8, a_tol=1e-10, max_iter=30)
 
-    np.save("../data/SW_sqrt/nonlinear_landau/sol_midpoint_u_" + str(Nv), sol_midpoint_u)
-    np.save("../data/SW_sqrt/nonlinear_landau/sol_midpoint_t_" + str(Nv), t_vec)
+    np.save("../data/SW_sqrt/ion_acoustic/sol_midpoint_u_" + str(Nv), sol_midpoint_u)
+    np.save("../data/SW_sqrt/ion_acoustic/sol_midpoint_t_" + str(Nv), t_vec)

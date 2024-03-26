@@ -1,7 +1,13 @@
-"""Ion-Acoustic Instability Module SW formulation solved via Vlasov-Poisson
+"""ion-acoustic wave module SW formulation solved via Vlasov-Poisson
 
 Author: Opal Issan (oissan@ucsd.edu)
 Date: December 4th, 2023
+
+Nx=16;Nn=50;nu=1e0;dt=0.01;T=400;Nt=T/dt;
+axe=sqrt(2);uxe=0;
+axi=sqrt(2)/135;uxi=0;Lx=10; % IAW
+mass ratio = hydrogren mass ratio 1863
+ions are cold dampens quickly/ probably does not need a lot of basis because its cold
 """
 import sys, os
 
@@ -91,25 +97,25 @@ if __name__ == '__main__':
     # number of spectral expansions
     Nv = 100
     # epsilon displacement in initial electron distribution
-    epsilon = 1e-2
+    epsilon = 0.01
     # velocity scaling of electron and ion
     alpha_e = 1
-    alpha_i = np.sqrt(1 / 50)
+    alpha_i = 1/135
     # x grid is from 0 to L
-    L = 10 * np.pi
+    L = 10
     # spacial spacing dx = x[i+1] - x[i]
     dx = L / (Nx - 1)
     # time stepping
-    dt = 0.2
+    dt = 0.1
     # final time (non-dimensional)
     T = 100.
     t_vec = np.linspace(0, T, int(T / dt) + 1)
     # velocity scaling
-    u_e = 2
+    u_e = 0
     u_i = 0
     # mass normalized
     m_e = 1
-    m_i = 25
+    m_i = 1836
     # charge normalized
     q_e = -1
     q_i = 1
@@ -122,16 +128,17 @@ if __name__ == '__main__':
     states_i = np.zeros((Nv, Nx-1))
 
     # initialize the expansion coefficients
-    states_e[0, :] = ((1 / (np.sqrt(2 * np.sqrt(np.pi)))) * (1 + epsilon * np.cos(x / 5)) / alpha_e)[:-1]
-    states_i[0, :] = (1 / (np.sqrt(2 * np.sqrt(np.pi)))) / alpha_i * np.ones(Nx)[:-1]
+    states_e[0, :] = (1 / (np.sqrt(2 * np.sqrt(np.pi)))) / alpha_e * np.ones(Nx)[:-1]
+    states_i[0, :] = ((1 / (np.sqrt(2 * np.sqrt(np.pi)))) * (1 + epsilon * np.cos(2*np.pi*x/L)) / alpha_i)[:-1]
 
     # initial condition of the semi-discretized ODE
     y0 = np.append(states_e.flatten("C"), states_i.flatten("C"))
+    y0 = np.append(y0, np.zeros(5))
 
     # set up implicit midpoint
     sol_midpoint_u = implicit_midpoint_solver(t_vec=t_vec, y0=y0, rhs=rhs,
                                               nonlinear_solver_type="newton_krylov",
-                                              r_tol=1e-8, a_tol=1e-14, max_iter=100)
+                                              r_tol=1e-8, a_tol=1e-10, max_iter=100)
 
     # save results
     np.save("data/SW/ion_acoustic/sol_midpoint_u_" + str(Nv), sol_midpoint_u)

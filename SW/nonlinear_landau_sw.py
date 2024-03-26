@@ -67,7 +67,7 @@ if __name__ == '__main__':
     # number of mesh points in x
     Nx = 101
     # number of spectral expansions
-    Nv = 101
+    Nv = 100
     # epsilon displacement in initial electron distribution
     epsilon = 0.5
     # velocity scaling of electron and ion
@@ -97,7 +97,7 @@ if __name__ == '__main__':
     x = np.linspace(0, L, Nx)
 
     # initial condition of the first expansion coefficient
-    C_0e = 1 / (np.sqrt(2 * np.sqrt(np.pi))) * (1 + epsilon * np.cos(0.5*x)) / alpha_e
+    C_0e = (1 / (np.sqrt(2 * np.sqrt(np.pi)))) * (1 + epsilon * np.cos(0.5*x)) / alpha_e
 
     # initialize states (electrons and ions)
     states_e = np.zeros((Nv, Nx - 1))
@@ -111,7 +111,7 @@ if __name__ == '__main__':
 
     # integrate (symplectic integrator: implicit midpoint)
     sol_midpoint_u = implicit_midpoint_solver(t_vec=t_vec, y0=y0, rhs=rhs, nonlinear_solver_type="newton_krylov",
-                                              r_tol=1e-8, a_tol=1e-14, max_iter=100)
+                                              r_tol=1e-8, a_tol=1e-10, max_iter=30)
 
     # save results
     np.save("../data/SW/nonlinear_landau/sol_midpoint_u_" + str(Nv), sol_midpoint_u)
