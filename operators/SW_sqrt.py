@@ -51,13 +51,13 @@ def psi_ln_sw(xi, n, alpha_s, u_s, v):
     :return: float or array,  asymmetrically weighted (AW) hermite polynomial of degree n evaluated at xi
     """
     if n == 0:
-        return np.exp(-xi ** 2) / np.sqrt(np.sqrt(np.pi))
+        return np.exp(-(xi ** 2)/2) / np.sqrt(np.sqrt(np.pi))
     if n == 1:
-        return np.exp(-xi ** 2) * (2*xi)/np.sqrt(2*np.sqrt(np.pi))
+        return np.exp(-(xi ** 2)/2) * (2*xi)/np.sqrt(2*np.sqrt(np.pi))
     else:
         psi = np.zeros((n+1, len(xi)))
-        psi[0, :] = np.exp(-xi ** 2) / np.sqrt(np.sqrt(np.pi))
-        psi[1, :] = np.exp(-xi ** 2) * (2*xi)/np.sqrt(2*np.sqrt(np.pi))
+        psi[0, :] = np.exp(-(xi ** 2)/2) / np.sqrt(np.sqrt(np.pi))
+        psi[1, :] = np.exp(-(xi ** 2)/2) * (2*xi)/np.sqrt(2*np.sqrt(np.pi))
         for jj in range(1, n):
             factor = - alpha_s * np.sqrt((jj+1)/2)
             psi[jj+1, :] = (alpha_s * np.sqrt(jj/2) * psi[jj-1, :] + u_s * psi[jj, :] - v * psi[jj, :]) / factor
