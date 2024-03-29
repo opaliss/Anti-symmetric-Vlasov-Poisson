@@ -21,7 +21,7 @@ def implicit_nonlinear_equation(y_new, y_old, dt, t_old, rhs):
 
 
 def implicit_midpoint_solver(t_vec, y0, rhs, nonlinear_solver_type="newton_krylov", r_tol=1e-8, a_tol=1e-15,
-                             max_iter=100):
+                             inner_maxiter=200, max_iter=100):
     """Solve the system
 
         dy/dt = rhs(y),    y(0) = y0,
@@ -32,6 +32,7 @@ def implicit_midpoint_solver(t_vec, y0, rhs, nonlinear_solver_type="newton_krylo
 
     Parameters
     ----------
+    :param inner_maxiter: maximum iterations of inner Krylov solver.
     :param max_iter: maximum iterations of nonlinear solver, default is 100
     :param a_tol: absolute tolerance nonlinear solver, default is 1e-15
     :param r_tol: relative tolerance nonlinear solver, default is 1e-8
@@ -70,6 +71,7 @@ def implicit_midpoint_solver(t_vec, y0, rhs, nonlinear_solver_type="newton_krylo
                                                                                            t_old=t_vec[tt - 1]),
                                                    xin=y_sol[:, tt - 1],
                                                    maxiter=max_iter,
+                                                   inner_maxiter=inner_maxiter,
                                                    f_tol=a_tol,
                                                    f_rtol=r_tol,
                                                    verbose=True)
@@ -83,6 +85,7 @@ def implicit_midpoint_solver(t_vec, y0, rhs, nonlinear_solver_type="newton_krylo
                                                  x0=y_sol[:, tt - 1],
                                                  maxiter=max_iter,
                                                  tol=a_tol,
+                                                 inner_maxiter=inner_maxiter,
                                                  rtol=r_tol)
 
         elif nonlinear_solver_type == "newton_krylov":
@@ -94,11 +97,12 @@ def implicit_midpoint_solver(t_vec, y0, rhs, nonlinear_solver_type="newton_krylo
                                                                                                     t_old=t_vec[tt - 1]),
                                                             xin=y_sol[:, tt - 1],
                                                             maxiter=max_iter,
+                                                            inner_maxiter=inner_maxiter,
                                                             f_tol=a_tol,
                                                             f_rtol=r_tol,
                                                             verbose=True)
             except Exception:
-                print("increase tolerance by factor of 100")
+                print("increase tolerance by factor of 1e4")
                 try:
                     y_sol[:, tt] = scipy.optimize.newton_krylov(F=lambda y: implicit_nonlinear_equation(y_new=y,
                                                                                                         y_old=y_sol[:, tt - 1],
@@ -107,9 +111,10 @@ def implicit_midpoint_solver(t_vec, y0, rhs, nonlinear_solver_type="newton_krylo
                                                                                                         t_old=t_vec[tt - 1]),
                                                                 xin=y_sol[:, tt - 1],
                                                                 maxiter=max_iter,
-                                                                f_tol=100*a_tol,
-                                                                f_rtol=r_tol,
+                                                                inner_maxiter=inner_maxiter,
+                                                                f_tol=1e4*a_tol,
+                                                                f_rtol=1e4*r_tol,
                                                                 verbose=True)
                 except Exception:
-                    return y_sol
+                    return y_sol[:, :tt]
     return y_sol

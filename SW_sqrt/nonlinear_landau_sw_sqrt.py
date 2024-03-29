@@ -63,7 +63,7 @@ if __name__ == '__main__':
     # number of mesh points in x
     Nx = 101
     # number of spectral expansions
-    Nv = 100
+    Nv = 101
     # epsilon displacement in initial electron distribution
     epsilon = 0.5
     # velocity scaling of electron and ion
@@ -76,9 +76,9 @@ if __name__ == '__main__':
     # time stepping
     dt = 1e-2
     # final time (non-dimensional)
-    T = 50.
+    T = 45.
     # vector with timestamps
-    t_vec = np.linspace(0, T, int(T / dt) + 1)
+    t_vec = np.linspace(42.1, T, int((T-42.1) / dt) + 1)
     # velocity scaling
     u_e = 0
     u_i = 0
@@ -101,13 +101,16 @@ if __name__ == '__main__':
     # initialize the expansion coefficients
     states_e[0, :] = C_0e[:-1]
 
-    # initial condition of the semi-discretized ODE
-    y0 = states_e.flatten("C")
-    y0 = np.append(y0, np.zeros(2))
+    # # initial condition of the semi-discretized ODE
+    # y0 = states_e.flatten("C")
+    # y0 = np.append(y0, np.zeros(2))
+    # 43.72
+    # 46.22
+    y0 = np.load("../data/SW_sqrt/nonlinear_landau/sol_midpoint_u_" + str(Nv) + "_continued.npy")[:, -1]
 
     # set up implicit midpoint with newton-krylov solver
     sol_midpoint_u = implicit_midpoint_solver(t_vec=t_vec, y0=y0, rhs=rhs, nonlinear_solver_type="newton_krylov",
-                                              r_tol=1e-8, a_tol=1e-10, max_iter=30)
+                                              r_tol=1e-8, a_tol=1e-8, max_iter=50)
 
-    np.save("../data/SW_sqrt/nonlinear_landau/sol_midpoint_u_" + str(Nv), sol_midpoint_u)
-    np.save("../data/SW_sqrt/nonlinear_landau/sol_midpoint_t_" + str(Nv), t_vec)
+    np.save("../data/SW_sqrt/nonlinear_landau/sol_midpoint_u_" + str(Nv) + "_continued2", sol_midpoint_u)
+    np.save("../data/SW_sqrt/nonlinear_landau/sol_midpoint_t_" + str(Nv) + "_continued2", t_vec)

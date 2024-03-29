@@ -95,7 +95,7 @@ if __name__ == '__main__':
     # number of mesh points in x
     Nx = 101
     # number of spectral expansions
-    Nv = 100
+    Nv = 101
     # epsilon displacement in initial electron distribution
     epsilon = 0.01
     # velocity scaling of electron and ion
@@ -106,9 +106,9 @@ if __name__ == '__main__':
     # spacial spacing dx = x[i+1] - x[i]
     dx = L / (Nx - 1)
     # time stepping
-    dt = 0.1
+    dt = 1
     # final time (non-dimensional)
-    T = 100.
+    T = 300.
     t_vec = np.linspace(0, T, int(T / dt) + 1)
     # velocity scaling
     u_e = 0
@@ -138,8 +138,8 @@ if __name__ == '__main__':
     # set up implicit midpoint
     sol_midpoint_u = implicit_midpoint_solver(t_vec=t_vec, y0=y0, rhs=rhs,
                                               nonlinear_solver_type="newton_krylov",
-                                              r_tol=1e-8, a_tol=1e-10, max_iter=100)
+                                              r_tol=1e-8, a_tol=1e-10, max_iter=100, inner_maxiter=200)
 
     # save results
-    np.save("data/SW/ion_acoustic/sol_midpoint_u_" + str(Nv), sol_midpoint_u)
-    np.save("data/SW/ion_acoustic/sol_midpoint_t_" + str(Nv), t_vec)
+    np.save("../data/SW/ion_acoustic/sol_midpoint_u_" + str(Nv) + "_dt_" + str(dt), sol_midpoint_u)
+    np.save("../data/SW/ion_acoustic/sol_midpoint_t_" + str(Nv) + "_dt_" + str(dt), t_vec)
