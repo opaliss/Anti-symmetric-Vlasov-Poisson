@@ -150,17 +150,14 @@ if __name__ == '__main__':
     # initial condition of the first expansion coefficient
     C_0e1 = delta1 * (1 / (np.sqrt(2 * np.sqrt(np.pi)))) * (1 + epsilon * np.cos(0.3 * x)) / alpha_e1
     C_0e2 = delta2 * (1 / (np.sqrt(2 * np.sqrt(np.pi)))) * (1 + epsilon * np.cos(0.3 * x)) / alpha_e2
-    C_0i = (1 / (np.sqrt(2 * np.sqrt(np.pi)))) * np.ones(Nx) / alpha_i
 
     # initialize states (electrons type 1 and 2)
     states_e1 = np.zeros((Nv_e1, Nx - 1))
     states_e2 = np.zeros((Nv_e2, Nx - 1))
-    states_i = np.zeros((Nv_i, Nx - 1))
 
     # initialize the expansion coefficients
     states_e1[0, :] = C_0e1[:-1]
     states_e2[0, :] = C_0e2[:-1]
-    states_i[0, :] = C_0i[:-1]
 
     # initial condition of the semi-discretized ODE
     y0 = np.zeros(Nv_e1 * (Nx - 1) + Nv_e2 * (Nx - 1) + 5)
