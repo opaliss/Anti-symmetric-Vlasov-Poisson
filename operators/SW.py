@@ -55,7 +55,7 @@ def integral_I2(n, u_s, alpha_s):
         return 2 * u_s * integral_I1(n=n, u_s=u_s, alpha_s=alpha_s)
 
 
-def linear_2(state_e, state_i, alpha_e, alpha_i, Nv, Nx, q_e=-1, q_i=1):
+def linear_2(state_e, state_i, alpha_e, alpha_i, Nv_e, Nv_i, Nx, q_e=-1, q_i=1):
     """charge density for single electron and ion species
 
     :param Nx: int, the number of grid points in space
@@ -70,8 +70,9 @@ def linear_2(state_e, state_i, alpha_e, alpha_i, Nv, Nx, q_e=-1, q_i=1):
     """
     term1 = np.zeros(Nx)
     term2 = np.zeros(Nx)
-    for m in range(Nv):
+    for m in range(Nv_e):
         term1 += alpha_e * state_e[m, :] * integral_I0(n=m)
+    for m in range(Nv_i):
         term2 += alpha_i * state_i[m, :] * integral_I0(n=m)
     return q_i * term2 + q_e * term1
 
@@ -102,7 +103,7 @@ def linear_2_two_stream(state_e1, state_e2, state_i, alpha_e1, alpha_e2, alpha_i
     return q_i * term3 + q_e2 * term2 + q_e1 * term1
 
 
-def solve_poisson_equation(state_e, state_i, alpha_e, alpha_i, dx, Nx, Nv, L, solver="gmres", order_fd=2):
+def solve_poisson_equation(state_e, state_i, alpha_e, alpha_i, dx, Nx, Nv_e, Nv_i, L, solver="gmres", order_fd=2):
     """solver Poisson equation for single electron and ion species
 
     :param L: float, spatial domain length
@@ -117,7 +118,7 @@ def solve_poisson_equation(state_e, state_i, alpha_e, alpha_i, dx, Nx, Nv, L, so
     :param dx: float, spatial spacing dx = x_{i+1} - x_{i} (we assume uniform spacing)
     :return: E(t)
     """
-    rhs = linear_2(state_e=state_e, state_i=state_i, alpha_e=alpha_e, alpha_i=alpha_i, Nx=Nx, Nv=Nv)
+    rhs = linear_2(state_e=state_e, state_i=state_i, alpha_e=alpha_e, alpha_i=alpha_i, Nx=Nx, Nv_e=Nv_e, Nv_i=Nv_i)
     if solver == "gmres":
         return gmres_solver(rhs=rhs, dx=dx, periodic=True, order="ddx", order_fd=order_fd)
     elif solver == "fft_solver":

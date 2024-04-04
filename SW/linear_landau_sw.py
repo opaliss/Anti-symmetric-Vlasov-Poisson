@@ -17,13 +17,13 @@ def rhs(y, t):
     dydt_ = np.zeros(len(y))
 
     # initialize state coefficients
-    state_e = np.zeros((Nv, Nx - 1))
-    state_i = np.zeros((Nv, Nx - 1))
+    state_e = np.zeros((Nv_e, Nx - 1))
+    state_i = np.zeros((Nv_i, Nx - 1))
     # static/background ions
     state_i[0, :] = (1 / (np.sqrt(2 * np.sqrt(np.pi)))) * np.ones(Nx - 1) / alpha_i
 
     # re-arrange states in [Nv, Nx] order
-    for jj in range(Nv):
+    for jj in range(Nv_e):
         state_e[jj, :] = y[jj * (Nx - 1): (jj + 1) * (Nx - 1)]
 
     E = solve_poisson_equation(state_e=state_e,
@@ -32,36 +32,40 @@ def rhs(y, t):
                                alpha_i=alpha_i,
                                dx=dx,
                                Nx=Nx - 1,
-                               Nv=Nv,
+                               Nv_e=Nv_e,
+                               Nv_i=Nv_i,
                                solver="gmres",
                                order_fd=2, L=L)
 
-    for jj in range(Nv):
-        dydt_[jj * (Nx - 1): (jj + 1) * (Nx - 1)] = RHS(state=state_e, m=jj, Nv=Nv,
+    for jj in range(Nv_e):
+        dydt_[jj * (Nx - 1): (jj + 1) * (Nx - 1)] = RHS(state=state_e, m=jj, Nv=Nv_e,
                                                         alpha_s=alpha_e, q_s=q_e, dx=dx, Nx=Nx, m_s=m_e, E=E, u_s=u_e)
 
     # mass drift (even)
-    dydt_[-1] = -dx * (q_e / m_e) * np.sqrt((Nv - 1) / 2) * integral_I0(n=Nv - 2) * E.T @ state_e[-1, :] \
-                -dx * (q_i / m_i) * np.sqrt((Nv - 1) / 2) * integral_I0(n=Nv - 2) * E.T @ state_i[-1, :]
+    dydt_[-1] = -dx * (q_e / m_e) * np.sqrt((Nv_e - 1) / 2) * integral_I0(n=Nv_e - 2) * E.T @ state_e[-1, :] \
+                - dx * (q_i / m_i) * np.sqrt((Nv_i - 1) / 2) * integral_I0(n=Nv_i - 2) * E.T @ state_i[-1, :]
 
     # momentum drift (odd)
-    dydt_[-2] = -dx * (Nv - 1) * integral_I0(n=Nv - 1) * E.T @ (alpha_e * q_e * state_e[-1, :] +
-                                                                alpha_i * q_i * state_i[-1, :])
+    dydt_[-2] = -dx * (Nv_e - 1) * integral_I0(n=Nv_e - 1) * E.T @ (alpha_e * q_e * state_e[-1, :]) \
+                - dx * (Nv_i - 1) * integral_I0(n=Nv_i - 1) * E.T @ (alpha_i * q_i * state_i[-1, :])
+
     # momentum (even)
-    dydt_[-3] = -dx * np.sqrt((Nv - 1) / 2) * integral_I0(n=Nv - 2) * E.T @ (u_e * q_e * state_e[-1, :] +
-                                                                             u_i * q_i * state_i[-1, :])
+    dydt_[-3] = -dx * np.sqrt((Nv_e - 1) / 2) * integral_I0(n=Nv_e - 2) * E.T @ (u_e * q_e * state_e[-1, :]) \
+                - dx * np.sqrt((Nv_i - 1) / 2) * integral_I0(n=Nv_i - 2) * E.T @ (u_i * q_i * state_i[-1, :])
 
     # energy drift (odd)
-    dydt_[-4] = -dx * (Nv - 1) * integral_I0(n=Nv - 1) * E.T @ (u_e * q_e * state_e[-1, :] +
-                                                                u_i * q_i * state_i[-1, :])
+    dydt_[-4] = -dx * (Nv_e - 1) * integral_I0(n=Nv_e - 1) * E.T @ (u_e * q_e * state_e[-1, :]) \
+                - dx * (Nv_i - 1) * integral_I0(n=Nv_i - 1) * E.T @ (u_i * q_i * state_i[-1, :])
+
     # energy drift (even)
     D = ddx_central(Nx=Nx, dx=dx)
     D_pinv = np.linalg.pinv(D)
-    dydt_[-5] = -dx * np.sqrt((Nv - 1) / 2) * integral_I0(n=Nv - 2) * E.T @ (
-                 q_e * ((2 * Nv - 1) * (alpha_e ** 2) + u_e ** 2) * state_e[-1, :]
-               + q_i * ((2 * Nv - 1) * (alpha_i ** 2) + u_i ** 2) * state_i[-1, :]
-               + q_e**2/m_e * D_pinv @ (E * state_e[-1, :])
-               + q_i**2/m_i * D_pinv @ (E * state_i[-1, :]))
+    dydt_[-5] = -dx * np.sqrt((Nv_e - 1) / 2) * integral_I0(n=Nv_e - 2) * E.T @ (
+            0.5 * q_e * ((2 * Nv_e - 1) * (alpha_e ** 2) + u_e ** 2) * state_e[-1, :]
+            + q_e ** 2 / m_e * D_pinv @ (E * state_e[-1, :])) \
+                - dx * np.sqrt((Nv_i - 1) / 2) * integral_I0(n=Nv_i - 2) * E.T @ (
+                        0.5 * q_i * ((2 * Nv_i - 1) * (alpha_i ** 2) + u_i ** 2) * state_i[-1, :]
+                        + q_i ** 2 / m_i * D_pinv @ (E * state_i[-1, :]))
 
     return dydt_
 
@@ -71,7 +75,8 @@ if __name__ == '__main__':
     # number of mesh points in x
     Nx = 101
     # number of spectral expansions
-    Nv = 101
+    Nv_e = 100
+    Nv_i = 1
     # epsilon displacement in initial electron distribution
     epsilon = 1e-2
     # velocity scaling of electron and ion
@@ -104,7 +109,7 @@ if __name__ == '__main__':
     C_0e = (1 / (np.sqrt(2 * np.sqrt(np.pi)))) * (1 + epsilon * np.cos(x)) / alpha_e
 
     # initialize states (electrons and ions)
-    states_e = np.zeros((Nv, Nx - 1))
+    states_e = np.zeros((Nv_e, Nx - 1))
 
     # initialize the expansion coefficients
     states_e[0, :] = C_0e[:-1]
@@ -119,5 +124,5 @@ if __name__ == '__main__':
                                               r_tol=1e-8, a_tol=1e-14, max_iter=100)
 
     # save results
-    np.save("../data/SW/linear_landau/sol_midpoint_u_" + str(Nv), sol_midpoint_u)
-    np.save("../data/SW/linear_landau/sol_midpoint_t_" + str(Nv), t_vec)
+    np.save("../data/SW/linear_landau/sol_midpoint_u_" + str(Nv_e), sol_midpoint_u)
+    np.save("../data/SW/linear_landau/sol_midpoint_t_" + str(Nv_e), t_vec)
