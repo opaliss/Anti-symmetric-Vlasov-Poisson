@@ -57,10 +57,10 @@ def rhs(y, t):
     D = ddx_central(Nx=Nx, dx=dx)
     D_pinv = np.linalg.pinv(D)
     dydt_[-5] = -dx * np.sqrt((Nv_e - 1) / 2) * integral_I0(n=Nv_e - 2) * E.T @ (
-            q_e * ((2 * Nv_e - 1) * (alpha_e ** 2) + u_e ** 2) * state_e[-1, :]
+            0.5 * q_e * ((2 * Nv_e - 1) * (alpha_e ** 2) + u_e ** 2) * state_e[-1, :]
             + q_e ** 2 / m_e * D_pinv @ (E * state_e[-1, :])) \
                 - dx * np.sqrt((Nv_i - 1) / 2) * integral_I0(n=Nv_i - 2) * E.T @ (
-                        q_i * ((2 * Nv_i - 1) * (alpha_i ** 2) + u_i ** 2) * state_i[-1, :]
+                        0.5 * q_i * ((2 * Nv_i - 1) * (alpha_i ** 2) + u_i ** 2) * state_i[-1, :]
                         + q_i ** 2 / m_i * D_pinv @ (E * state_i[-1, :]))
     return dydt_
 
@@ -71,7 +71,7 @@ if __name__ == '__main__':
     Nx = 101
     # number of spectral expansions
     Nv_e = 100
-    Nv_i = 1
+    Nv_i = 2
     # epsilon displacement in initial electron distribution
     epsilon = 0.5
     # velocity scaling of electron and ion

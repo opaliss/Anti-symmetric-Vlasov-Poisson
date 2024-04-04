@@ -77,7 +77,7 @@ def linear_2(state_e, state_i, alpha_e, alpha_i, Nv_e, Nv_i, Nx, q_e=-1, q_i=1):
     return q_i * term2 + q_e * term1
 
 
-def linear_2_two_stream(state_e1, state_e2, state_i, alpha_e1, alpha_e2, alpha_i, Nx, Nv, q_e1=-1, q_e2=-1, q_i=1):
+def linear_2_two_stream(state_e1, state_e2, state_i, alpha_e1, alpha_e2, alpha_i, Nx, Nv_e1, Nv_e2, Nv_i, q_e1=-1, q_e2=-1, q_i=1):
     """charge density for two electron species and single ion species
 
     :param q_e1: float, the normalized charge of electron species 1
@@ -96,9 +96,11 @@ def linear_2_two_stream(state_e1, state_e2, state_i, alpha_e1, alpha_e2, alpha_i
     term1 = np.zeros(Nx)
     term2 = np.zeros(Nx)
     term3 = np.zeros(Nx)
-    for m in range(Nv):
+    for m in range(Nv_e1):
         term1 += alpha_e1 * state_e1[m, :] * integral_I0(n=m)
+    for m in range(Nv_e2):
         term2 += alpha_e2 * state_e2[m, :] * integral_I0(n=m)
+    for m in range(Nv_i):
         term3 += alpha_i * state_i[m, :] * integral_I0(n=m)
     return q_i * term3 + q_e2 * term2 + q_e1 * term1
 
@@ -127,8 +129,8 @@ def solve_poisson_equation(state_e, state_i, alpha_e, alpha_i, dx, Nx, Nv_e, Nv_
         return fft_solver_Ax_b(rhs=rhs, dx=dx)
 
 
-def solve_poisson_equation_two_stream(state_e1, state_e2, state_i, alpha_e1, alpha_e2, alpha_i, dx, Nx, Nv, L,
-                                      solver="gmres", periodic=True, order_fd=2):
+def solve_poisson_equation_two_stream(state_e1, state_e2, state_i, alpha_e1, alpha_e2, alpha_i, dx, Nx,
+                                      Nv_e1, Nv_e2, Nv_i, L, solver="gmres", periodic=True, order_fd=2):
     """solver Poisson equation for two electron species and single ion species
 
     :param L: float, spatial domain length
@@ -153,7 +155,9 @@ def solve_poisson_equation_two_stream(state_e1, state_e2, state_i, alpha_e1, alp
                               alpha_e2=alpha_e2,
                               alpha_i=alpha_i,
                               Nx=Nx,
-                              Nv=Nv)
+                              Nv_e1=Nv_e1,
+                              Nv_e2=Nv_e2,
+                              Nv_i=Nv_i)
     if solver == "gmres":
         return gmres_solver(rhs=rhs, dx=dx, periodic=periodic, order="ddx", order_fd=order_fd)
     elif solver == "fft_solver":

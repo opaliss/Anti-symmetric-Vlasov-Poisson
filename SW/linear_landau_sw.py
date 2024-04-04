@@ -76,7 +76,7 @@ if __name__ == '__main__':
     Nx = 101
     # number of spectral expansions
     Nv_e = 100
-    Nv_i = 1
+    Nv_i = 2
     # epsilon displacement in initial electron distribution
     epsilon = 1e-2
     # velocity scaling of electron and ion
