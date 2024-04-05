@@ -135,7 +135,7 @@ if __name__ == '__main__':
     # mass normalized
     m_e1 = 1
     m_e2 = 1
-    m_i = 1863
+    m_i = 1836
     # charge normalized
     q_e1 = -1
     q_e2 = -1

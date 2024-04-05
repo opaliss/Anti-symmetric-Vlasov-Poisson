@@ -97,7 +97,7 @@ if __name__ == '__main__':
     u_i = 0
     # mass normalized
     m_e = 1
-    m_i = 1863
+    m_i = 1836
     # charge normalized
     q_e = -1
     q_i = 1
