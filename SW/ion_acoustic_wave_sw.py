@@ -81,31 +81,31 @@ def rhs(t, y):
     # energy (odd)
     dydt_[-4] = -dx * (Nv_e - 1) * integral_I0(n=Nv_e - 1) * E.T @ (u_e * q_e * state_e[-1, :]) \
                 -dx * (Nv_i - 1) * integral_I0(n=Nv_i - 1) * E.T @ (u_i * q_i * state_i[-1, :])
+
     # energy (even)
     D = ddx_central(Nx=Nx, dx=dx)
     D_pinv = np.linalg.pinv(D)
     dydt_[-5] = -dx * np.sqrt((Nv_e - 1) / 2) * integral_I0(n=Nv_e - 2) * E.T @ (
-            q_e * ((2 * Nv_e - 1) * (alpha_e ** 2) + u_e ** 2) * state_e[-1, :]
+            0.5 * q_e * ((2 * Nv_e - 1) * (alpha_e ** 2) + u_e ** 2) * state_e[-1, :]
             + q_e ** 2 / m_e * D_pinv @ (E * state_e[-1, :])) \
             -dx * np.sqrt((Nv_i - 1) / 2) * integral_I0(n=Nv_i - 2) * E.T @ (
-            q_i * ((2 * Nv_i - 1) * (alpha_i ** 2) + u_i ** 2) * state_i[-1, :]
+            0.5 * q_i * ((2 * Nv_i - 1) * (alpha_i ** 2) + u_i ** 2) * state_i[-1, :]
             + q_i ** 2 / m_i * D_pinv @ (E * state_i[-1, :]))
-    print(t)
     return dydt_
 
 
 if __name__ == '__main__':
     # set up configuration parameters
     # number of mesh points in x
-    Nx = 51
+    Nx = 101
     # number of spectral expansions
-    Nv_e = 21
-    Nv_i = 21
+    Nv_e = 101
+    Nv_i = 101
     # epsilon displacement in initial electron distribution
     epsilon = 0.01
     # velocity scaling of electron and ion
     alpha_e = 1
-    alpha_i = 1 / 31
+    alpha_i = 1 / 135
     # x grid is from 0 to L
     L = 10
     # spacial spacing dx = x[i+1] - x[i]
@@ -113,14 +113,14 @@ if __name__ == '__main__':
     # time stepping
     dt = 1
     # final time (non-dimensional)
-    T = 40.
-    t_vec = np.linspace(0, T, int(T / dt) + 1)
+    T = 600.
+    t_vec = np.linspace(0, T, int(T/dt) + 1)
     # velocity scaling
     u_e = 0
     u_i = 0
     # mass normalized
     m_e = 1
-    m_i = 100
+    m_i = 1836
     # charge normalized
     q_e = -1
     q_i = 1
@@ -140,17 +140,11 @@ if __name__ == '__main__':
     y0 = np.append(states_e.flatten("C"), states_i.flatten("C"))
     y0 = np.append(y0, np.zeros(5))
 
-    # # set up implicit midpoint
-    # sol_midpoint_u = implicit_midpoint_solver(t_vec=t_vec, y0=y0, rhs=rhs,
-    #                                           nonlinear_solver_type="newton_krylov",
-    #                                           r_tol=1e-8, a_tol=1e-10, max_iter=100, inner_maxiter=200)
+    # set up implicit midpoint
+    sol_midpoint_u = implicit_midpoint_solver(t_vec=t_vec, y0=y0, rhs=rhs,
+                                              nonlinear_solver_type="newton_krylov",
+                                              r_tol=1e-8, a_tol=1e-14, max_iter=200, inner_maxiter=200)
 
-    # runge kutta
-    sol_midpoint_u = scipy.integrate.solve_ivp(fun=rhs, t_span=[0, T], y0=y0, method="RK45", atol=1e-8, rtol=1e-6)
+    np.save("../data/SW/ion_acoustic/sol_midpoint_u_" + str(Nv_e) + "_dt_" + str(dt) + "_T_" + str(T), sol_midpoint_u)
+    np.save("../data/SW/ion_acoustic/sol_midpoint_t_" + str(Nv_e) + "_dt_" + str(dt) + "_T_" + str(T), t_vec)
 
-    # save results
-    np.save("../data/SW/ion_acoustic/sol_midpoint_u_Nve" + str(Nv_e) + "_dt_" + str(dt) + "_explicit", sol_midpoint_u.y)
-    np.save("../data/SW/ion_acoustic/sol_midpoint_t_Nve" + str(Nv_e) + "_dt_" + str(dt) + "_explicit", sol_midpoint_u.t)
-
-    # np.save("../data/SW/ion_acoustic/sol_midpoint_u_Nve" + str(Nv_e) + "_dt_" + str(dt), sol_midpoint_u)
-    # np.save("../data/SW/ion_acoustic/sol_midpoint_t_Nve" + str(Nv_e) + "_dt_" + str(dt), t_vec)
