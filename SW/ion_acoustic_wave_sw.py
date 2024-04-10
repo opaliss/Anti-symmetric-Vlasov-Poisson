@@ -72,15 +72,15 @@ def rhs(t, y):
                 - dx * (q_i / m_i) * np.sqrt((Nv_i - 1) / 2) * integral_I0(n=Nv_i - 2) * E.T @ state_i[-1, :]
 
     # momentum (odd)
-    dydt_[-2] = -dx * (Nv_e - 1) * integral_I0(n=Nv_e - 1) * E.T @ (alpha_e * q_e * state_e[-1, :]) \
-                -dx * (Nv_i - 1) * integral_I0(n=Nv_i - 1) * E.T @ (alpha_i * q_i * state_i[-1, :])
+    dydt_[-2] = -dx * Nv_e * integral_I0(n=Nv_e - 1) * E.T @ (alpha_e * q_e * state_e[-1, :]) \
+                -dx * Nv_i * integral_I0(n=Nv_i - 1) * E.T @ (alpha_i * q_i * state_i[-1, :])
     # momentum (even)
     dydt_[-3] = -dx * np.sqrt((Nv_e - 1) / 2) * integral_I0(n=Nv_e - 2) * E.T @ (u_e * q_e * state_e[-1, :]) \
                 -dx * np.sqrt((Nv_i - 1) / 2) * integral_I0(n=Nv_i - 2) * E.T @ (u_i * q_i * state_i[-1, :])
 
     # energy (odd)
-    dydt_[-4] = -dx * (Nv_e - 1) * integral_I0(n=Nv_e - 1) * E.T @ (u_e * q_e * state_e[-1, :]) \
-                -dx * (Nv_i - 1) * integral_I0(n=Nv_i - 1) * E.T @ (u_i * q_i * state_i[-1, :])
+    dydt_[-4] = -dx * Nv_e * integral_I0(n=Nv_e - 1) * E.T @ (u_e * q_e * alpha_e * state_e[-1, :]) \
+                -dx * Nv_i  * integral_I0(n=Nv_i - 1) * E.T @ (u_i * q_i * alpha_i * state_i[-1, :])
 
     # energy (even)
     D = ddx_central(Nx=Nx, dx=dx)
@@ -97,10 +97,10 @@ def rhs(t, y):
 if __name__ == '__main__':
     # set up configuration parameters
     # number of mesh points in x
-    Nx = 101
+    Nx = 51
     # number of spectral expansions
-    Nv_e = 101
-    Nv_i = 101
+    Nv_e = 51
+    Nv_i = 51
     # epsilon displacement in initial electron distribution
     epsilon = 0.01
     # velocity scaling of electron and ion
@@ -143,7 +143,7 @@ if __name__ == '__main__':
     # set up implicit midpoint
     sol_midpoint_u = implicit_midpoint_solver(t_vec=t_vec, y0=y0, rhs=rhs,
                                               nonlinear_solver_type="newton_krylov",
-                                              r_tol=1e-8, a_tol=1e-14, max_iter=200, inner_maxiter=200)
+                                              r_tol=1e-8, a_tol=1e-14, max_iter=250, inner_maxiter=200)
 
     np.save("../data/SW/ion_acoustic/sol_midpoint_u_" + str(Nv_e) + "_dt_" + str(dt) + "_T_" + str(T), sol_midpoint_u)
     np.save("../data/SW/ion_acoustic/sol_midpoint_t_" + str(Nv_e) + "_dt_" + str(dt) + "_T_" + str(T), t_vec)

@@ -46,16 +46,16 @@ def rhs(y, t):
                 - dx * (q_i / m_i) * np.sqrt((Nv_i - 1) / 2) * integral_I0(n=Nv_i - 2) * E.T @ state_i[-1, :]
 
     # momentum drift (odd)
-    dydt_[-2] = -dx * (Nv_e - 1) * integral_I0(n=Nv_e - 1) * E.T @ (alpha_e * q_e * state_e[-1, :]) \
-                - dx * (Nv_i - 1) * integral_I0(n=Nv_i - 1) * E.T @ (alpha_i * q_i * state_i[-1, :])
+    dydt_[-2] = -dx * Nv_e * integral_I0(n=Nv_e - 1) * E.T @ (alpha_e * q_e * state_e[-1, :]) \
+                - dx * Nv_i * integral_I0(n=Nv_i - 1) * E.T @ (alpha_i * q_i * state_i[-1, :])
 
     # momentum (even)
     dydt_[-3] = -dx * np.sqrt((Nv_e - 1) / 2) * integral_I0(n=Nv_e - 2) * E.T @ (u_e * q_e * state_e[-1, :]) \
                 - dx * np.sqrt((Nv_i - 1) / 2) * integral_I0(n=Nv_i - 2) * E.T @ (u_i * q_i * state_i[-1, :])
 
     # energy drift (odd)
-    dydt_[-4] = -dx * (Nv_e - 1) * integral_I0(n=Nv_e - 1) * E.T @ (u_e * q_e * state_e[-1, :]) \
-                - dx * (Nv_i - 1) * integral_I0(n=Nv_i - 1) * E.T @ (u_i * q_i * state_i[-1, :])
+    dydt_[-4] = -dx * Nv_e * integral_I0(n=Nv_e - 1) * E.T @ (u_e * q_e * alpha_e * state_e[-1, :]) \
+                - dx * Nv_i  * integral_I0(n=Nv_i - 1) * E.T @ (u_i * q_i * alpha_i * state_i[-1, :])
 
     # energy drift (even)
     D = ddx_central(Nx=Nx, dx=dx)

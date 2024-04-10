@@ -74,9 +74,9 @@ def rhs(y, t):
                 - dx * (q_i / m_i) * np.sqrt((Nv_i - 1) / 2) * integral_I0(n=Nv_i - 2) * E.T @ state_i[-1, :]
 
     # momentum (odd)
-    dydt_[-2] = -dx * (Nv_e1 - 1) * integral_I0(n=Nv_e1 - 1) * E.T @ (alpha_e1 * q_e1 * state_e1[-1, :]) \
-                -dx * (Nv_e2 - 1) * integral_I0(n=Nv_e2 - 1) * E.T @ (alpha_e2 * q_e2 * state_e2[-1, :]) \
-                -dx * (Nv_i - 1) * integral_I0(n=Nv_i - 1) * E.T @ (alpha_i * q_i * state_i[-1, :])
+    dydt_[-2] = -dx * Nv_e1 * integral_I0(n=Nv_e1 - 1) * E.T @ (alpha_e1 * q_e1 * state_e1[-1, :]) \
+                -dx * Nv_e2 * integral_I0(n=Nv_e2 - 1) * E.T @ (alpha_e2 * q_e2 * state_e2[-1, :]) \
+                -dx * Nv_i * integral_I0(n=Nv_i - 1) * E.T @ (alpha_i * q_i * state_i[-1, :])
 
     # momentum (even)
     dydt_[-3] = -dx * np.sqrt((Nv_e1 - 1) / 2) * integral_I0(n=Nv_e1 - 2) * E.T @ (u_e1 * q_e1 * state_e1[-1, :])\
@@ -84,9 +84,9 @@ def rhs(y, t):
                 -dx * np.sqrt((Nv_i - 1) / 2) * integral_I0(n=Nv_i - 2) * E.T @ (u_i * q_i * state_i[-1, :])
 
     # energy (odd)
-    dydt_[-4] = -dx * (Nv_e1 - 1) * integral_I0(n=Nv_e1 - 1) * E.T @ (u_e1 * q_e1 * state_e1[-1, :]) \
-                -dx * (Nv_e2 - 1) * integral_I0(n=Nv_e2 - 1) * E.T @ (u_e2 * q_e2 * state_e2[-1, :]) \
-                -dx * (Nv_i - 1) * integral_I0(n=Nv_i - 1) * E.T @ (u_i * q_i * state_i[-1, :])
+    dydt_[-4] = -dx * Nv_e1 * integral_I0(n=Nv_e1 - 1) * E.T @ (u_e1 * q_e1 * alpha_e1 * state_e1[-1, :]) \
+                -dx * Nv_e2 * integral_I0(n=Nv_e2 - 1) * E.T @ (u_e2 * q_e2 * alpha_e2 * state_e2[-1, :]) \
+                -dx * Nv_i * integral_I0(n=Nv_i - 1) * E.T @ (u_i * q_i * alpha_i * state_i[-1, :])
 
     # energy (even)
     D = ddx_central(Nx=Nx, dx=dx)

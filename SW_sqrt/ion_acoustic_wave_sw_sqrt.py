@@ -77,9 +77,9 @@ def rhs(y, t):
 if __name__ == '__main__':
     # set up configuration parameters
     # number of mesh points in x
-    Nx = 101
+    Nx = 51
     # number of spectral expansions
-    Nv = 101
+    Nv = 51
     # epsilon displacement in initial ion distribution
     epsilon = 0.01
     # velocity scaling of electron and ion
