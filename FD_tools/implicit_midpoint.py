@@ -7,6 +7,8 @@ import numpy as np
 import scipy.optimize
 
 
+
+
 def implicit_nonlinear_equation(y_new, y_old, dt, t_old, rhs):
     """return the nonlinear equation for implicit midpoint.
 

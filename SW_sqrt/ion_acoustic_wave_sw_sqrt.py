@@ -89,8 +89,8 @@ if __name__ == '__main__':
     L = 10
     # spacial spacing dx = x[i+1] - x[i]
     dx = L / (Nx - 1)
-    # time stepping
-    dt = 1
+    # time st   epping
+    dt = 0.05
     # final time (non-dimensional)
     T = 600.
     t_vec = np.linspace(0, T, int(T / dt) + 1)
@@ -114,6 +114,7 @@ if __name__ == '__main__':
     # initialize the expansion coefficients
     states_e[0, :] = np.sqrt((1 + epsilon * np.cos(2*np.pi*x/L)) / alpha_e)[:-1]
     states_i[0, :] = np.sqrt((1 + epsilon * np.cos(2*np.pi*x/L)) / alpha_i)[:-1]
+
 
     # initial condition of the semi-discretized ODE
     y0 = np.append(states_e.flatten("C"), states_i.flatten("C"))
