@@ -9,10 +9,10 @@ def runge_kutta_4(t0, y0, tf, dt, rhs):
     # count number of iterations using step size
     n = int((tf - t0) / dt)
     # initialize solution
-    y_sol = np.zeros((len(y0), n))
+    y_sol = np.zeros((len(y0), n + 1))
     y_sol[:, 0] = y0
 
-    for ii in range(n + 1):
+    for ii in range(n):
         "Apply Runge Kutta Formulas to find next value of y"
         k1 = rhs(t=dt*ii, y=y_sol[:, ii])
         k2 = rhs(t=dt*(ii + 0.5), y=y_sol[:, ii] + 0.5 * dt * k1)

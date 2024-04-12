@@ -115,7 +115,7 @@ if __name__ == '__main__':
     # time stepping
     dt = 0.01
     # final time (non-dimensional)
-    T = 10
+    T = 600
     t_vec = np.linspace(0, T, int(T/dt) + 1)
     # velocity scaling
     u_e = 0
