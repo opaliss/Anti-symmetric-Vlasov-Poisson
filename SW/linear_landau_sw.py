@@ -55,7 +55,7 @@ def rhs(y, t):
 
     # energy drift (odd)
     dydt_[-4] = -dx * Nv_e * integral_I0(n=Nv_e - 1) * E.T @ (u_e * q_e * alpha_e * state_e[-1, :]) \
-                - dx * Nv_i  * integral_I0(n=Nv_i - 1) * E.T @ (u_i * q_i * alpha_i * state_i[-1, :])
+                - dx * Nv_i * integral_I0(n=Nv_i - 1) * E.T @ (u_i * q_i * alpha_i * state_i[-1, :])
 
     # energy drift (even)
     D = ddx_central(Nx=Nx, dx=dx)

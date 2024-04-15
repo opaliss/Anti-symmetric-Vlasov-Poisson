@@ -80,7 +80,7 @@ def rhs(t, y):
 
     # energy (odd)
     dydt_[-4] = -dx * Nv_e * integral_I0(n=Nv_e - 1) * E.T @ (u_e * q_e * alpha_e * state_e[-1, :]) \
-                -dx * Nv_i  * integral_I0(n=Nv_i - 1) * E.T @ (u_i * q_i * alpha_i * state_i[-1, :])
+                -dx * Nv_i * integral_I0(n=Nv_i - 1) * E.T @ (u_i * q_i * alpha_i * state_i[-1, :])
 
     # energy (even)
     D = ddx_central(Nx=Nx, dx=dx)
@@ -111,7 +111,7 @@ if __name__ == '__main__':
     # spacial spacing dx = x[i+1] - x[i]
     dx = L / (Nx - 1)
     # time stepping
-    dt = 0.05
+    dt = 2
     # final time (non-dimensional)
     T = 600.
     t_vec = np.linspace(0, T, int(T/dt) + 1)
